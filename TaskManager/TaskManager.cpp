@@ -1,174 +1,141 @@
-﻿#include <windows.h>
-#include "file_service.h"
-#include <tchar.h>
-
-VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
-VOID WINAPI ControlHandler(DWORD request);
-
-SERVICE_STATUS ServiceStatus;
-SERVICE_STATUS_HANDLE hStatus;
-
+﻿#include <iostream>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <cassert>
 #include <string>
-#include <locale.h>
 
-#define BUFFER_SIZE 4096
-#define PIPE_NAME L"\\\\.\\pipe\\file_service_pipe"
+#pragma comment(lib, "ws2_32.lib")
 
-FileService fileService; // Глобальный экземпляр сервиса
+#define SERVER_PORT 12345
+#define BUFFER_SIZE 512
 
-// Функция для обработки команд через Named Pipe
-std::string ProcessCommand(const std::string& command) {
-    // Разбор команды из формата "command:param1,param2,..."
-    size_t colonPos = command.find(':');
-    std::string cmd = command.substr(0, colonPos);
-    std::string params = (colonPos != std::string::npos) ? command.substr(colonPos + 1) : "";
-
-    if (cmd == "openFile") {
-        bool result = fileService.openFile(params);
-        return result ? "true" : "false";
-    }
-    else if (cmd == "closeFile") {
-        bool result = fileService.closeFile();
-        return result ? "true" : "false";
-    }
-    else if (cmd == "readFile") {
-        return fileService.readFile();
-    }
-    else if (cmd == "writeFile") {
-        bool result = fileService.writeFile(params);
-        return result ? "true" : "false";
-    }
-    else if (cmd == "countCharacters") {
-        int count = fileService.countCharacters();
-        return std::to_string(count);
-    }
-    else if (cmd == "deleteFile") {
-        bool result = fileService.deleteFile();
-        return result ? "true" : "false";
-    }
-    // --- Добавлены новые команды ---
-    else if (cmd == "findString") {
-        bool result = fileService.findString(params);
-        return result ? "true" : "false";
-    }
-    else if (cmd == "findCharacters") {
-        int count = fileService.findCharacters(params);
-        return std::to_string(count);
-    }
-    else if (cmd == "countWords") {
-        int count = fileService.countWords();
-        return std::to_string(count);
-    }
-    else if (cmd == "getFileSize") {
-        long long size = fileService.getFileSize();
-        return std::to_string(size);
-    }
-    else if (cmd == "clearFileContent") {
-        bool result = fileService.clearFileContent();
-        return result ? "true" : "false";
-    }
-    else {
-        return "Error: Unknown command";
-    }
-
-    return "Error, uknown command";
+// Функция для инициализации Winsock
+bool InitWinsock() {
+    WSADATA wsaData;  // Структура для хранения информации о Winsock
+    int result = WSAStartup(MAKEWORD(2, 2), &wsaData); // Инициализация Winsock (версии 2.2)
+    return result == 0; // Возвращаем true, если инициализация прошла успешно
 }
 
-VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
-    ServiceStatus.dwServiceType = SERVICE_WIN32;
-    ServiceStatus.dwCurrentState = SERVICE_START_PENDING;
-    ServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN;
-    ServiceStatus.dwWin32ExitCode = 0;
-    ServiceStatus.dwServiceSpecificExitCode = 0;
-    ServiceStatus.dwCheckPoint = 0;
-    ServiceStatus.dwWaitHint = 0;
-
-    hStatus = RegisterServiceCtrlHandler(L"file_service", (LPHANDLER_FUNCTION)ControlHandler);
-    if (hStatus == NULL) return;
-
-    ServiceStatus.dwCurrentState = SERVICE_RUNNING;
-    SetServiceStatus(hStatus, &ServiceStatus);
-
-    while (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
-        // Создание экземпляра именованного канала
-        HANDLE hPipe = CreateNamedPipe(
-            PIPE_NAME,                    // имя канала
-            PIPE_ACCESS_DUPLEX,           // двунаправленный доступ
-            PIPE_TYPE_MESSAGE |           // передача сообщений
-            PIPE_READMODE_MESSAGE |       // чтение сообщений
-            PIPE_WAIT,                    // блокирующий режим
-            PIPE_UNLIMITED_INSTANCES,     // максимальное количество экземпляров (в однопоточном варианте это не так важно, но оставим)
-            BUFFER_SIZE,                  // размер выходного буфера
-            BUFFER_SIZE,                  // размер входного буфера
-            0,                            // тайм-аут по умолчанию
-            NULL                          // атрибуты безопасности по умолчанию
-        );
-
-        if (hPipe == INVALID_HANDLE_VALUE) {
-            // Ошибка создания канала
-            Sleep(1000);
-            continue;
-        }
-
-        // Ожидание подключения клиента
-        if (ConnectNamedPipe(hPipe, NULL) || GetLastError() == ERROR_PIPE_CONNECTED) {
-            char buffer[BUFFER_SIZE];
-            DWORD bytesRead, bytesWritten;
-
-            // Обработка клиента в текущем потоке
-            while (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
-                // Чтение запроса от клиента
-                if (!ReadFile(hPipe, buffer, BUFFER_SIZE, &bytesRead, NULL) || bytesRead == 0) {
-                    break; // Клиент отключился или произошла ошибка
-                }
-
-                // Обработка команды
-                buffer[bytesRead] = '\0'; // Добавляем завершающий нуль
-                std::string response = ProcessCommand(buffer);
-
-                // Отправка ответа клиенту
-                if (!WriteFile(hPipe, response.c_str(), response.length() + 1, &bytesWritten, NULL)) {
-                    break; // Ошибка при отправке ответа
-                }
-            }
-
-            // Закрытие соединения после обработки клиента или остановки сервиса
-            FlushFileBuffers(hPipe);
-            DisconnectNamedPipe(hPipe);
-            CloseHandle(hPipe);
-        }
-        else {
-            // Ошибка при подключении клиента
-            CloseHandle(hPipe);
-        }
+// Функция для создания сокета для прослушивания подключений
+SOCKET CreateListenSocket() {
+    SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);  // Создаём TCP сокет для прослушивания
+    if (listenSocket == INVALID_SOCKET) {  // Проверяем, не возникла ли ошибка при создании сокета
+        std::cerr << "Ошибка создания сокета: " << WSAGetLastError() << std::endl;  // Если ошибка, выводим её
     }
-
-    ServiceStatus.dwCurrentState = SERVICE_STOPPED;
-    SetServiceStatus(hStatus, &ServiceStatus);
+    return listenSocket;  // Возвращаем созданный сокет
 }
 
-VOID WINAPI ControlHandler(DWORD request) {
-    switch (request) {
-    case SERVICE_CONTROL_STOP:
-    case SERVICE_CONTROL_SHUTDOWN:
-        ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
-        SetServiceStatus(hStatus, &ServiceStatus);
-        ServiceStatus.dwCurrentState = SERVICE_STOPPED;
-        break;
-    default:
-        break;
+// Функция для привязки сокета к определённому адресу и порту
+bool BindSocket(SOCKET listenSocket) {
+    sockaddr_in serverAddr = {};  // Структура для хранения адреса сервера
+    serverAddr.sin_family = AF_INET;   // Используем IPv4
+    serverAddr.sin_addr.s_addr = INADDR_ANY;  // Слушаем на всех интерфейсах
+    serverAddr.sin_port = htons(SERVER_PORT);  // Привязываем к порту, определённому в SERVER_PORT
+
+    // Привязываем сокет к адресу и порту
+    int result = bind(listenSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
+    if (result == SOCKET_ERROR) {  // Если произошла ошибка при привязке
+        std::cerr << "Ошибка привязки сокета: " << WSAGetLastError() << std::endl;
+        return false;  // Возвращаем false, если привязка не удалась
     }
-    SetServiceStatus(hStatus, &ServiceStatus);
+    return true;  // Возвращаем true, если привязка прошла успешно
 }
 
+// Функция для начала прослушивания подключений на сокете
+bool StartListening(SOCKET listenSocket) {
+    int result = listen(listenSocket, SOMAXCONN);  // Запускаем прослушивание
+    if (result == SOCKET_ERROR) {  // Если произошла ошибка
+        std::cerr << "Ошибка прослушивания: " << WSAGetLastError() << std::endl;
+        return false;  // Возвращаем false, если не удалось начать прослушивание
+    }
+    return true;  // Возвращаем true, если прослушивание началось
+}
+
+// Функция для обработки данных, полученных от клиента
+void HandleClient(SOCKET clientSocket) {
+    char recvBuf[BUFFER_SIZE];  // Буфер для хранения данных, полученных от клиента
+
+    // Получаем данные от клиента
+    int bytesReceived = recv(clientSocket, recvBuf, sizeof(recvBuf) - 1, 0);
+    if (bytesReceived > 0) {  // Если данные были получены
+        recvBuf[bytesReceived] = '\0';  // Добавляем завершающий ноль к строке
+        std::cout << "Получено от клиента: " << recvBuf << std::endl;  // Выводим полученные данные
+
+        // Формируем ответ для клиента
+        std::string response = "Сервер получил: " + std::string(recvBuf);
+
+        // Отправляем ответ обратно клиенту
+        int bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
+        if (bytesSent == SOCKET_ERROR) {  // Если ошибка при отправке данных
+            std::cerr << "Ошибка отправки данных клиенту: " << WSAGetLastError() << std::endl;
+        }
+    }
+    else if (bytesReceived == 0) {  // Если клиент отключился
+        std::cout << "Клиент отключился." << std::endl;
+    }
+    else {  // Если произошла ошибка при получении данных
+        std::cerr << "Ошибка при получении данных от клиента: " << WSAGetLastError() << std::endl;
+    }
+}
+
+// Главная функция сервера
 int main() {
-    setlocale(0, "");
-    SERVICE_TABLE_ENTRY ServiceTable[] = {
-        {const_cast<LPWSTR>(L"file_service"), (LPSERVICE_MAIN_FUNCTION)ServiceMain},
-        {NULL, NULL}
-    };
-    if (!StartServiceCtrlDispatcher(ServiceTable)) {
-        return GetLastError();
+    setlocale(LC_ALL, "");
+
+    // Инициализация Winsock
+    if (!InitWinsock()) {
+        std::cerr << "Ошибка WSAStartup!" << std::endl;  // Если не удалось инициализировать Winsock
+        return 1;  // Завершаем выполнение программы
     }
+
+    // Создание сокета для прослушивания
+    SOCKET listenSocket = CreateListenSocket();
+    if (listenSocket == INVALID_SOCKET) {
+        WSACleanup();  // Очистка Winsock
+        return 1;  // Завершаем выполнение программы, если сокет не был создан
+    }
+
+    // Привязка сокета
+    if (!BindSocket(listenSocket)) {
+        closesocket(listenSocket);  // Закрытие сокета, если привязка не удалась
+        WSACleanup();  // Очистка Winsock
+        return 1;  // Завершаем выполнение программы
+    }
+
+    // Начало прослушивания на сокете
+    if (!StartListening(listenSocket)) {
+        closesocket(listenSocket);  // Закрытие сокета, если не удалось начать прослушивание
+        WSACleanup();  // Очистка Winsock
+        return 1;  // Завершаем выполнение программы
+    }
+
+    std::cout << "Сервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
+
+    // Главный цикл для принятия и обработки клиентских соединений
+    while (true) {
+        sockaddr_in clientAddr = {};  // Структура для хранения данных о клиенте
+        int clientAddrLen = sizeof(clientAddr);
+
+        // Принятие входящего соединения
+        SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
+        if (clientSocket == INVALID_SOCKET) {  // Если ошибка при принятии соединения
+            std::cerr << "Ошибка accept: " << WSAGetLastError() << std::endl;
+            continue;  // Продолжаем прослушивание
+        }
+
+        std::cout << "Клиент подключился." << std::endl;
+
+        // Обработка общения с клиентом
+        HandleClient(clientSocket);
+
+        // Закрытие сокета клиента после обработки общения
+        closesocket(clientSocket);
+    }
+
+    // Закрытие сокета для прослушивания и очистка Winsock
+    closesocket(listenSocket);
+    WSACleanup();
+
     return 0;
 }
+

@@ -18,14 +18,11 @@
     <ClCompile Include="TaskManager.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="file_service.cpp">
+    <ClCompile Include="Taskm.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="file_service.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="Taskm.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>

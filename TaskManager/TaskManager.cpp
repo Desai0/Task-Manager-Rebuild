@@ -57,34 +57,106 @@ bool StartListening(SOCKET listenSocket) {
 
 // Функция для обработки данных, полученных от клиента
 void HandleClient(SOCKET clientSocket) {
-    char recvBuf[BUFFER_SIZE];  // Буфер для хранения данных, полученных от клиента
-
-    // Получаем данные от клиента
+    char recvBuf[BUFFER_SIZE];
     int bytesReceived = recv(clientSocket, recvBuf, sizeof(recvBuf) - 1, 0);
-    if (bytesReceived > 0) {  // Если данные были получены
-        recvBuf[bytesReceived] = '\0';  // Добавляем завершающий ноль к строке
-        std::cout << "Получено от клиента: " << recvBuf << std::endl;  // Выводим полученные данные
 
-        // Формируем ответ для клиента
+    if (bytesReceived == SOCKET_ERROR) {
+        std::cerr << "Ошибка при получении данных от клиента: " << WSAGetLastError() << std::endl;
+        return;
+    }
+    else if (bytesReceived == 0) {
+        std::cout << "Клиент отключился." << std::endl;
+    }
+    else {
+        recvBuf[bytesReceived] = '\0';
+        std::cout << "Получено от клиента: " << recvBuf << std::endl;
+
+        // Отправляем ответ клиенту
         std::string response = "Сервер получил: " + std::string(recvBuf);
-
-        // Отправляем ответ обратно клиенту
         int bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
-        if (bytesSent == SOCKET_ERROR) {  // Если ошибка при отправке данных
+
+        if (bytesSent == SOCKET_ERROR) {
             std::cerr << "Ошибка отправки данных клиенту: " << WSAGetLastError() << std::endl;
         }
     }
-    else if (bytesReceived == 0) {  // Если клиент отключился
-        std::cout << "Клиент отключился." << std::endl;
+}
+
+
+
+///////////////
+
+// Тест для инициализации Winsock
+void Test_InitWinsock() {
+    if (InitWinsock()) {
+        std::cout << "Test_InitWinsock прошел: Winsock инициализирован успешно.\n";
     }
-    else {  // Если произошла ошибка при получении данных
-        std::cerr << "Ошибка при получении данных от клиента: " << WSAGetLastError() << std::endl;
+    else {
+        std::cout << "Test_InitWinsock не прошел: Ошибка инициализации Winsock.\n";
     }
 }
+
+// Тест для создания сокета
+void Test_CreateListenSocket() {
+    SOCKET sock = CreateListenSocket();
+    if (sock != INVALID_SOCKET) {
+        std::cout << "Test_CreateListenSocket прошел: Сокет создан успешно.\n";
+    }
+    else {
+        std::cout << "Test_CreateListenSocket не прошел: Ошибка создания сокета.\n";
+    }
+}
+
+// Тест для привязки сокета
+void Test_BindSocket() {
+    SOCKET sock = CreateListenSocket();
+    if (BindSocket(sock)) {
+        std::cout << "Test_BindSocket прошел: Сокет успешно привязан к порту: " << SERVER_PORT << ".\n";
+    }
+    else {
+        std::cerr << "Test_BindSocket не прошел: Ошибка привязки сокета. Код ошибки: " << WSAGetLastError() << std::endl;
+    }
+    closesocket(sock);
+}
+
+// Тест для начала прослушивания подключений
+void Test_StartListening() {
+    SOCKET sock = CreateListenSocket();
+    if (BindSocket(sock)) {
+        if (StartListening(sock)) {
+            std::cout << "Test_StartListening прошел: Сокет слушает на порту " << SERVER_PORT << ".\n";
+        }
+        else {
+            std::cerr << "Test_StartListening не прошел: Ошибка начала прослушивания. Код ошибки: " << WSAGetLastError() << std::endl;
+        }
+    }
+    else {
+        std::cerr << "Test_StartListening не прошел: Ошибка привязки сокета. Код ошибки: " << WSAGetLastError() << std::endl;
+    }
+    closesocket(sock);
+}
+
+// Тест для обработки клиента
+void Test_HandleClient() {
+    SOCKET clientSocket = CreateListenSocket();
+    HandleClient(clientSocket);
+    closesocket(clientSocket);
+}
+
 
 //// Главная функция сервера
 int main() {
     setlocale(LC_ALL, "");
+
+    std::cout << "Запуск тестов...\n";
+
+    // запуск тестов
+    Test_InitWinsock();         // Тест для инициализации Winsock
+    Test_CreateListenSocket();  // Тест для создания сокета
+    Test_BindSocket();          // Тест для привязки сокета к порту
+    Test_StartListening();      // Тест для начала прослушивания подключений
+    Test_HandleClient();        // Тест для обработки клиента
+
+    std::cout << "Тесты завершены.\n";
 
     // Инициализация Winsock
     if (!InitWinsock()) {
@@ -113,7 +185,7 @@ int main() {
         return 1;  // Завершаем выполнение программы
     }
 
-    std::cout << "Сервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
+    std::cout << "\nСервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
 
     // Главный цикл для принятия и обработки клиентских соединений
     while (true) {

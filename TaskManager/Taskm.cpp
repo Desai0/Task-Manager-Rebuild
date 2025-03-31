@@ -104,8 +104,8 @@ TASKM_ERROR Taskm::print()
     if (taskList.empty())
     {
         // Можно не считать ошибкой, а просто ничего не выводить
-        std::cout << "Список задач пуст." << std::endl;
-        return TASKM_EMPTY_ERROR; // Или TASKM_OK, в зависимости от семантики
+        /*std::cout << "Список задач пуст." << std::endl;
+        return TASKM_EMPTY_ERROR;*/ // Или TASKM_OK, в зависимости от семантики
     }
     else
     {

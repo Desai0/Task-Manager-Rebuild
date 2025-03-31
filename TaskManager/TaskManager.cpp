@@ -120,6 +120,7 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm перед
                         responseJson["message"] = "Ошибка обновления списка процессов на сервере";
                     }
                     responseString = responseJson.dump();
+                    responseString += "\n";
 
                 }
                 else if (command == "terminateProcess") {
@@ -142,6 +143,7 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm перед
                         responseJson["message"] = "Неверный формат команды terminateProcess";
                     }
                     responseString = responseJson.dump();
+                    responseString += "\n";
 
                 }
                 else if (command == "getSystemLoad") {
@@ -149,6 +151,7 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm перед
                     responseJson["status"] = "success";
                     responseJson["systemLoad"] = { {"cpu", 0.0}, {"memory", 0.0} };
                     responseString = responseJson.dump();
+                    responseString += "\n";
 
                 }
                 else {
@@ -156,6 +159,7 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm перед
                     responseJson["status"] = "error";
                     responseJson["message"] = "Неизвестная команда";
                     responseString = responseJson.dump();
+                    responseString += "\n";
                 }
             }
             else {
@@ -163,6 +167,7 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm перед
                 responseJson["status"] = "error";
                 responseJson["message"] = "Неверный формат запроса";
                 responseString = responseJson.dump();
+                responseString += "\n";
             }
 
         }
@@ -334,7 +339,8 @@ bool TerminateProcessByPid(DWORD pid) {
 
 //// Главная функция сервера
 int main() {
-    setlocale(LC_ALL, "");
+    SetConsoleOutputCP(CP_UTF8);
+    setlocale(LC_ALL, ".UTF8");
 
     std::cout << "Запуск тестов...\n";
 

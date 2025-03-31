@@ -8,6 +8,16 @@
 #include <Psapi.h>    // Включаем здесь, т.к. нужно для update (GetProcessMemoryInfo)
 #include "json.hpp"
 
+
+// Method returning process handle, needed for cpu usage tracking, probably
+HANDLE Task::get_handle()
+{
+    HANDLE hand = OpenProcess(PROCESS_ALL_ACCESS, FALSE, this->pid);
+    return hand;
+}
+
+
+
 // Реализация метода update
 TASKM_ERROR Taskm::update()
 {
@@ -61,6 +71,8 @@ TASKM_ERROR Taskm::update()
 
         // CPU - Placeholder (не реализовано в вашем коде)
 
+
+
         // Process Identification
         task.name = Taskm::wchar_to_string(entry.szExeFile);
         task.pid = entry.th32ProcessID;
@@ -69,6 +81,18 @@ TASKM_ERROR Taskm::update()
         taskList.push_back(task);
 
     } while (Process32Next(snap, &entry));
+
+    // Actual CPU part, will redo later, maybe
+
+    if (!taskList[0].init)
+    {
+        Taskm::init_taskList();
+    }
+    Sleep(1000);
+    for (Task& task : taskList)
+    {
+        Taskm::update_cpuUsage(task);
+    }
 
     CloseHandle(snap);
     return TASKM_OK;
@@ -87,7 +111,7 @@ TASKM_ERROR Taskm::print()
     {
         for (const auto& task : taskList) // Используем const& для эффективности
         {
-            std::cout << "Name: " << task.name << "; PID: " << task.pid << "; Parent: " << task.pidParent << "; RAM: " << task.memory << " MB" << std::endl;
+            std::cout << "Name: " << task.name << "; PID: " << task.pid << "; Parent: " << task.pidParent << "; RAM: " << task.memory << " MB" << "; CPU: " << task.cpuUsage << std::endl;
         }
         return TASKM_OK;
     }
@@ -111,7 +135,8 @@ TASKM_ERROR Taskm::save_json()
             {"pid", task.pid},
             {"pidParent", task.pidParent},
             {"name", task.name},
-            {"memory", task.memory}
+            {"memory", task.memory},
+            {"cpu", task.cpuUsage}
         };
         jsonFile["processes"].push_back(taskObject);
     }
@@ -134,6 +159,71 @@ std::vector<Task> Taskm::get()
     // Если нужна только ссылка для чтения, можно сделать:
     // const std::vector<Task>& Taskm::get() const { return taskList; }
 }
+
+
+// init_taskList realisation, used to set some Task fields needed for cpu tracking
+
+// Could be done on Task init, but probaly would be slower
+// However this variant probably takes more memory
+
+// Code is from StackOverflow
+// TODO: Linkie here
+
+void Taskm::init_taskList()
+{
+    SYSTEM_INFO sysInfo;
+    FILETIME ftime, fsys, fuser;
+    HANDLE procHandle;
+
+    GetSystemInfo(&sysInfo);
+    GetSystemTimeAsFileTime(&ftime);
+
+    for (Task & task : Taskm::taskList)
+    {
+        procHandle = task.get_handle();
+        GetProcessTimes(procHandle, &ftime, &ftime, &fsys, &fuser);
+
+        task.processors = sysInfo.dwNumberOfProcessors;
+
+        memcpy(&task.CPUlast, &ftime, sizeof(FILETIME));
+        memcpy(&task.CPUlastSys, &fsys, sizeof(FILETIME));
+        memcpy(&task.CPUlastUser, &fuser, sizeof(FILETIME));
+
+        CloseHandle(procHandle);
+    }
+}
+
+// Updates a single task struct with cpu usage
+// probably have to be reworked
+// has a problem with integer limits
+void Taskm::update_cpuUsage(Task & task)
+{
+    FILETIME ftime, fsys, fuser;
+    ULARGE_INTEGER now, sys, user;
+    HANDLE procHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, task.pid);
+
+    GetSystemTimeAsFileTime(&ftime);
+    memcpy(&now, &ftime, sizeof(FILETIME));
+
+    GetProcessTimes(procHandle, &ftime, &ftime, &fsys, &fuser);
+    memcpy(&sys, &fsys, sizeof(FILETIME));
+    memcpy(&user, &fuser, sizeof(FILETIME));
+
+    task.cpuUsage =
+        (
+            (static_cast<double>(sys.QuadPart) - task.CPUlastSys.QuadPart) +
+            (user.QuadPart - task.CPUlastUser.QuadPart)
+            )
+        /
+        (now.QuadPart - task.CPUlast.QuadPart)
+        /
+        task.processors;
+
+    task.CPUlast = now;
+    task.CPUlastSys = sys;
+    task.CPUlastUser = user;
+}
+
 
 // Реализация статичного метода wchar_to_string
 std::string Taskm::wchar_to_string(WCHAR* wch)

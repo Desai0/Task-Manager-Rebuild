@@ -16,37 +16,52 @@ enum TASKM_ERROR {
 };
 
 struct Task {
-	std::string name;
-	DWORD pid;
-	DWORD pidParent;
-	SIZE_T memory;
+	
+	// Output fields
+	std::string name = "Empty";
+	DWORD pid = 0;
+	DWORD pidParent = 0;
+	SIZE_T memory = 0;
+	double cpuUsage = 0;
+
+	// Cpu tracking fields
+	ULARGE_INTEGER CPUlast, CPUlastSys, CPUlastUser;
+	int processors = 0;
+	bool init = false;
+
+
+	// Methods
+	HANDLE get_handle();
 };
 
-struct TaskList {
-	std::vector<Task> taskList;
-
-	Task operator[] (int idx)
-	{
-		return taskList[idx];
-	}
-
-	void push_back(Task t)
-	{
-		taskList.push_back(t);
-	}
-
-	int size() { return taskList.size(); }
-	bool empty() { return taskList.empty(); }
-};
+// Probably not gonna use that, but maybe, so commented for now
+//struct TaskList {
+//	std::vector<Task> taskList;
+//
+//	Task operator[] (int idx)
+//	{
+//		return taskList[idx];
+//	}
+//
+//	void push_back(Task t)
+//	{
+//		taskList.push_back(t);
+//	}
+//
+//	int size() { return taskList.size(); }
+//	bool empty() { return taskList.empty(); }
+//};
 
 class Taskm
 {
 private:
     std::vector<Task> taskList;
     static std::string wchar_to_string(WCHAR* wch); // Объявление статичного метода
+	void init_taskList();
+	void update_cpuUsage(Task & task);
 
 public:
-    Taskm() = default;
+	Taskm() = default;
 
     TASKM_ERROR update(); 
     TASKM_ERROR print();  

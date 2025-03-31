@@ -144,80 +144,71 @@ void Test_HandleClient() {
 
 
 //// Главная функция сервера
-int main() {
-    setlocale(LC_ALL, "");
-
-    std::cout << "Запуск тестов...\n";
-
-    // запуск тестов
-    Test_InitWinsock();         // Тест для инициализации Winsock
-    Test_CreateListenSocket();  // Тест для создания сокета
-    Test_BindSocket();          // Тест для привязки сокета к порту
-    Test_StartListening();      // Тест для начала прослушивания подключений
-    Test_HandleClient();        // Тест для обработки клиента
-
-    std::cout << "Тесты завершены.\n";
-
-    // Инициализация Winsock
-    if (!InitWinsock()) {
-        std::cerr << "Ошибка WSAStartup!" << std::endl;  // Если не удалось инициализировать Winsock
-        return 1;  // Завершаем выполнение программы
-    }
-
-    // Создание сокета для прослушивания
-    SOCKET listenSocket = CreateListenSocket();
-    if (listenSocket == INVALID_SOCKET) {
-        WSACleanup();  // Очистка Winsock
-        return 1;  // Завершаем выполнение программы, если сокет не был создан
-    }
-
-    // Привязка сокета
-    if (!BindSocket(listenSocket)) {
-        closesocket(listenSocket);  // Закрытие сокета, если привязка не удалась
-        WSACleanup();  // Очистка Winsock
-        return 1;  // Завершаем выполнение программы
-    }
-
-    // Начало прослушивания на сокете
-    if (!StartListening(listenSocket)) {
-        closesocket(listenSocket);  // Закрытие сокета, если не удалось начать прослушивание
-        WSACleanup();  // Очистка Winsock
-        return 1;  // Завершаем выполнение программы
-    }
-
-    std::cout << "\nСервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
-
-    // Главный цикл для принятия и обработки клиентских соединений
-    while (true) {
-        sockaddr_in clientAddr = {};  // Структура для хранения данных о клиенте
-        int clientAddrLen = sizeof(clientAddr);
-
-        // Принятие входящего соединения
-        SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
-        if (clientSocket == INVALID_SOCKET) {  // Если ошибка при принятии соединения
-            std::cerr << "Ошибка accept: " << WSAGetLastError() << std::endl;
-            continue;  // Продолжаем прослушивание
-        }
-
-        std::cout << "Клиент подключился." << std::endl;
-
-        // Обработка общения с клиентом
-        HandleClient(clientSocket);
-
-        // Закрытие сокета клиента после обработки общения
-        closesocket(clientSocket);
-    }
-
-    // Закрытие сокета для прослушивания и очистка Winsock
-    closesocket(listenSocket);
-    WSACleanup();
-
-    return 0;
-}
-
-//int main()
-//{
-//    Taskm taskm;
-//    taskm.update();
-//    taskm.save_json();
+//int main() {
+//    setlocale(LC_ALL, "");
+//
+//    // Инициализация Winsock
+//    if (!InitWinsock()) {
+//        std::cerr << "Ошибка WSAStartup!" << std::endl;  // Если не удалось инициализировать Winsock
+//        return 1;  // Завершаем выполнение программы
+//    }
+//
+//    // Создание сокета для прослушивания
+//    SOCKET listenSocket = CreateListenSocket();
+//    if (listenSocket == INVALID_SOCKET) {
+//        WSACleanup();  // Очистка Winsock
+//        return 1;  // Завершаем выполнение программы, если сокет не был создан
+//    }
+//
+//    // Привязка сокета
+//    if (!BindSocket(listenSocket)) {
+//        closesocket(listenSocket);  // Закрытие сокета, если привязка не удалась
+//        WSACleanup();  // Очистка Winsock
+//        return 1;  // Завершаем выполнение программы
+//    }
+//
+//    // Начало прослушивания на сокете
+//    if (!StartListening(listenSocket)) {
+//        closesocket(listenSocket);  // Закрытие сокета, если не удалось начать прослушивание
+//        WSACleanup();  // Очистка Winsock
+//        return 1;  // Завершаем выполнение программы
+//    }
+//
+//    std::cout << "Сервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
+//
+//    // Главный цикл для принятия и обработки клиентских соединений
+//    while (true) {
+//        sockaddr_in clientAddr = {};  // Структура для хранения данных о клиенте
+//        int clientAddrLen = sizeof(clientAddr);
+//
+//        // Принятие входящего соединения
+//        SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
+//        if (clientSocket == INVALID_SOCKET) {  // Если ошибка при принятии соединения
+//            std::cerr << "Ошибка accept: " << WSAGetLastError() << std::endl;
+//            continue;  // Продолжаем прослушивание
+//        }
+//
+//        std::cout << "Клиент подключился." << std::endl;
+//
+//        // Обработка общения с клиентом
+//        HandleClient(clientSocket);
+//
+//        // Закрытие сокета клиента после обработки общения
+//        closesocket(clientSocket);
+//    }
+//
+//    // Закрытие сокета для прослушивания и очистка Winsock
+//    closesocket(listenSocket);
+//    WSACleanup();
+//
+//    return 0;
 //}
+
+int main()
+{
+    Taskm taskm;
+    taskm.update();
+    taskm.print();
+    taskm.print();
+    //taskm.save_json();
+}

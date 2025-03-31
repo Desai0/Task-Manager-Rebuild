@@ -132,6 +132,7 @@
     <ClCompile Include="TaskManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cpu.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Taskm.h" />
   </ItemGroup>

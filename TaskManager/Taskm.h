@@ -5,6 +5,8 @@
 #include <Psapi.h>
 #include <string>
 
+#include "json.hpp"
+
 #define MB_SIZE 1000000.0
 
 enum TASKM_ERROR {
@@ -57,17 +59,17 @@ class Taskm
 private:
     std::vector<Task> taskList;
     static std::string wchar_to_string(WCHAR* wch); // Объявление статичного метода
-	void init_taskList();
-	void update_cpuUsage(Task & task);
+    void init_taskList();
+    void update_cpuUsage(Task& task);
 
 public:
-	Taskm() = default;
+    Taskm() = default;
 
-    TASKM_ERROR update(); 
-    TASKM_ERROR print();  
-    TASKM_ERROR save_json(); 
-    std::vector<Task> get(); 
-
+    TASKM_ERROR update();
+    TASKM_ERROR print();
+    TASKM_ERROR save_json(); // Можно оставить, если сохранение в файл еще нужно
+    std::vector<Task> get();
+    nlohmann::json get_json_object(); // <-- НОВЫЙ МЕТОД
 
     Taskm(Taskm const&) = delete;
     void operator= (Taskm const&) = delete;

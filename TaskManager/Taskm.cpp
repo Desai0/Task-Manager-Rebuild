@@ -152,6 +152,40 @@ TASKM_ERROR Taskm::save_json()
     return TASKM_OK; // Возвращаем OK после успешной записи
 }
 
+
+nlohmann::json Taskm::get_json_object()
+{
+    if (taskList.empty())
+    {
+        // Возвращаем пустой объект или null, чтобы указать на отсутствие данных
+        return nlohmann::json::object(); // Пустой JSON объект {}
+        // или return nullptr; // если вызывающий код будет проверять на null
+    }
+
+    nlohmann::json jsonFile;
+    jsonFile["processes"] = nlohmann::json::array(); // Инициализируем как массив
+
+    for (const auto& task : taskList)
+    {
+        // Округляем значения перед добавлением в JSON для красоты
+        double cpuRounded = round(task.cpuUsage * 100.0) / 100.0; // до 2 знаков
+        double memRounded = round(task.memory * 100.0) / 100.0;   // до 2 знаков
+
+        nlohmann::json taskObject =
+        {
+            {"pid", task.pid},
+            {"pidParent", task.pidParent}, // Оставляем, если нужно в GUI
+            {"name", task.name},
+            {"memory", memRounded}, // Используем округленное значение
+            {"cpu", cpuRounded}     // Используем округленное значение
+        };
+        jsonFile["processes"].push_back(taskObject);
+    }
+    // Возвращаем готовый JSON объект
+    return jsonFile;
+}
+
+
 // Реализация метода get
 std::vector<Task> Taskm::get()
 {

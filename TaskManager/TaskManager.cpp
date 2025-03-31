@@ -7,11 +7,20 @@
 #include <tchar.h>
 #include <locale.h>
 
+#include <thread>   // Для работы с потоками
+#include <chrono>   // Для работы со временем (паузы)
+
+#include "json.hpp"
+
 #pragma comment(lib, "ws2_32.lib")
 
 #define SERVER_PORT 12345
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 4096
 
+using json = nlohmann::json;
+
+// Объявление функции TerminateProcessByPid
+bool TerminateProcessByPid(DWORD pid);
 
 // Функция для инициализации Winsock
 bool InitWinsock() {
@@ -56,29 +65,146 @@ bool StartListening(SOCKET listenSocket) {
 }
 
 // Функция для обработки данных, полученных от клиента
-void HandleClient(SOCKET clientSocket) {
+void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm передается по ссылке
+    std::cout << "[" << std::this_thread::get_id() << "] Поток обработки клиента запущен." << std::endl;
     char recvBuf[BUFFER_SIZE];
-    int bytesReceived = recv(clientSocket, recvBuf, sizeof(recvBuf) - 1, 0);
+    bool keepConnection = true; // Флаг для управления циклом
 
-    if (bytesReceived == SOCKET_ERROR) {
-        std::cerr << "Ошибка при получении данных от клиента: " << WSAGetLastError() << std::endl;
-        return;
-    }
-    else if (bytesReceived == 0) {
-        std::cout << "Клиент отключился." << std::endl;
-    }
-    else {
-        recvBuf[bytesReceived] = '\0';
-        std::cout << "Получено от клиента: " << recvBuf << std::endl;
+    while (keepConnection) { // <--- НАЧАЛО ЦИКЛА ОБРАБОТКИ КОМАНД
+        int bytesReceived = recv(clientSocket, recvBuf, sizeof(recvBuf) - 1, 0);
 
-        // Отправляем ответ клиенту
-        std::string response = "Сервер получил: " + std::string(recvBuf);
-        int bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
-
-        if (bytesSent == SOCKET_ERROR) {
-            std::cerr << "Ошибка отправки данных клиенту: " << WSAGetLastError() << std::endl;
+        if (bytesReceived == SOCKET_ERROR) {
+            int error = WSAGetLastError();
+            if (error == WSAECONNRESET || error == WSAECONNABORTED) {
+                std::cout << "[" << std::this_thread::get_id() << "] Клиент разорвал соединение." << std::endl;
+            }
+            else {
+                std::cerr << "[" << std::this_thread::get_id() << "] Ошибка recv: " << error << std::endl;
+            }
+            keepConnection = false; // Выходим из цикла при ошибке
+            continue; // Переходим к закрытию сокета
         }
-    }
+        else if (bytesReceived == 0) {
+            std::cout << "[" << std::this_thread::get_id() << "] Клиент отключился штатно." << std::endl;
+            keepConnection = false; // Выходим из цикла
+            continue; // Переходим к закрытию сокета
+        }
+
+        // --- Обработка полученных данных ---
+        recvBuf[bytesReceived] = '\0'; // Нуль-терминация
+        std::string clientRequest(recvBuf);
+        std::cout << "[" << std::this_thread::get_id() << "] Получено от клиента: " << clientRequest << std::endl;
+
+        json responseJson;
+        std::string responseString;
+
+        try {
+            json requestJson = json::parse(clientRequest);
+
+            if (requestJson.contains("command")) {
+                std::string command = requestJson["command"];
+                std::cout << "[" << std::this_thread::get_id() << "] Команда: " << command << std::endl;
+
+                // --- Обработка команд (логика остается почти такой же) ---
+                if (command == "getProcesses") {
+                    // ... (код для getProcesses) ...
+                    TASKM_ERROR update_result = taskManager.update(); // Обновляем данные ПЕРЕД отправкой
+                    if (update_result == TASKM_OK) {
+                        json processListJson = taskManager.get_json_object();
+                        responseJson = processListJson;
+                        responseJson["status"] = "success";
+                    }
+                    else {
+                        std::cerr << "[" << std::this_thread::get_id() << "] Ошибка обновления списка процессов: " << update_result << std::endl;
+                        responseJson["status"] = "error";
+                        responseJson["message"] = "Ошибка обновления списка процессов на сервере";
+                    }
+                    responseString = responseJson.dump();
+
+                }
+                else if (command == "terminateProcess") {
+                    // ... (код для terminateProcess) ...
+                    if (requestJson.contains("pid") && requestJson["pid"].is_number_integer()) {
+                        DWORD pidToTerminate = requestJson["pid"];
+                        if (TerminateProcessByPid(pidToTerminate)) {
+                            responseJson["status"] = "success";
+                            responseJson["message"] = "Процесс завершен";
+                            responseJson["pid"] = pidToTerminate;
+                        }
+                        else {
+                            responseJson["status"] = "error";
+                            responseJson["message"] = "Не удалось завершить процесс";
+                            responseJson["pid"] = pidToTerminate;
+                        }
+                    }
+                    else {
+                        responseJson["status"] = "error";
+                        responseJson["message"] = "Неверный формат команды terminateProcess";
+                    }
+                    responseString = responseJson.dump();
+
+                }
+                else if (command == "getSystemLoad") {
+                    // ... (код для getSystemLoad - пока заглушка) ...
+                    responseJson["status"] = "success";
+                    responseJson["systemLoad"] = { {"cpu", 0.0}, {"memory", 0.0} };
+                    responseString = responseJson.dump();
+
+                }
+                else {
+                    // ... (обработка неизвестной команды) ...
+                    responseJson["status"] = "error";
+                    responseJson["message"] = "Неизвестная команда";
+                    responseString = responseJson.dump();
+                }
+            }
+            else {
+                // ... (обработка неверного формата запроса) ...
+                responseJson["status"] = "error";
+                responseJson["message"] = "Неверный формат запроса";
+                responseString = responseJson.dump();
+            }
+
+        }
+        catch (json::parse_error& e) {
+            std::cerr << "[" << std::this_thread::get_id() << "] Ошибка парсинга JSON: " << e.what() << " Входные данные: " << clientRequest << std::endl;
+            responseString = R"({"status": "error", "message": "Ошибка парсинга JSON на сервере"})";
+        }
+        catch (const std::exception& e) {
+            std::cerr << "[" << std::this_thread::get_id() << "] Другая ошибка: " << e.what() << std::endl;
+            responseString = R"({"status": "error", "message": "Внутренняя ошибка сервера"})";
+        }
+
+        // --- Отправка ответа ---
+        if (!responseString.empty()) {
+            const int sendBufSize = responseString.length();
+            int totalBytesSent = 0;
+            const char* dataToSend = responseString.c_str();
+
+            while (totalBytesSent < sendBufSize) {
+                int bytesSent = send(clientSocket, dataToSend + totalBytesSent, sendBufSize - totalBytesSent, 0);
+                if (bytesSent == SOCKET_ERROR) {
+                    std::cerr << "[" << std::this_thread::get_id() << "] Ошибка send: " << WSAGetLastError() << std::endl;
+                    keepConnection = false; // Выходим из основного цикла при ошибке отправки
+                    break; // Выходим из цикла отправки
+                }
+                if (bytesSent == 0) {
+                    std::cout << "[" << std::this_thread::get_id() << "] Отправка прервана (0 байт)." << std::endl;
+                    keepConnection = false; // Выходим из основного цикла
+                    break; // Выходим из цикла отправки
+                }
+                totalBytesSent += bytesSent;
+            }
+            if (keepConnection && totalBytesSent == sendBufSize) { // Проверяем keepConnection перед логом
+                std::cout << "[" << std::this_thread::get_id() << "] Ответ успешно отправлен (" << totalBytesSent << " байт)." << std::endl;
+            }
+        }
+        // Продолжаем цикл while(keepConnection), ожидая следующую команду
+    } // <--- КОНЕЦ ЦИКЛА WHILE(keepConnection)
+
+    // --- Закрытие сокета клиента ---
+    closesocket(clientSocket); // <--- ЗАКРЫВАЕМ СОКЕТ ЗДЕСЬ
+    std::cout << "[" << std::this_thread::get_id() << "] Соединение с клиентом закрыто. Поток завершен." << std::endl;
 }
 
 
@@ -135,80 +261,161 @@ void Test_StartListening() {
     closesocket(sock);
 }
 
-// Тест для обработки клиента
-void Test_HandleClient() {
-    SOCKET clientSocket = CreateListenSocket();
-    HandleClient(clientSocket);
-    closesocket(clientSocket);
+// Тест для обработки клиента -------- НЕ РАБОТАЕТ, ТРЕБУЕТ ПЕРЕРАБОТКИ, или не надо
+//void Test_HandleClient() {
+//    SOCKET clientSocket = CreateListenSocket();
+//    HandleClient(clientSocket);
+//    closesocket(clientSocket);
+//} 
+
+
+
+// Функция, которая будет выполняться в отдельном потоке для обновления JSON
+//void periodicJsonUpdate() {
+//    while (true) { // Бесконечный цикл для постоянной работы
+//        try {
+//            Taskm taskm;
+//            // std::cout << "[Updater] Обновление списка процессов..." << std::endl; // Раскомментируй для отладки
+//
+//            TASKM_ERROR update_result = taskm.update();
+//            if (update_result == TASKM_OK) {
+//                TASKM_ERROR save_result = taskm.save_json();
+//                if (save_result == TASKM_OK) {
+//                    // Успешно обновили
+//                    std::cout << "[Updater] Файл output.json обновлен." << std::endl;
+//                }
+//                else {
+//                    // Ошибка сохранения
+//                    std::cerr << "[Updater] Ошибка при сохранении JSON: " << save_result << std::endl;
+//                }
+//            }
+//            else {
+//                // Ошибка обновления списка
+//                std::cerr << "[Updater] Ошибка при обновлении списка процессов: " << update_result << std::endl;
+//            }
+//        }
+//        catch (const std::exception& e) {
+//            // Ловим возможные исключения, чтобы поток не падал
+//            std::cerr << "[Updater] Исключение в потоке обновления: " << e.what() << std::endl;
+//        }
+//        catch (...) {
+//            std::cerr << "[Updater] Неизвестное исключение в потоке обновления." << std::endl;
+//        }
+//
+//
+//        // Пауза на 5 секунд перед следующей итерацией
+//        std::this_thread::sleep_for(std::chrono::seconds(5));
+//    }
+//}
+
+
+bool TerminateProcessByPid(DWORD pid) {
+    // Открываем процесс с правом на завершение
+    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+    if (hProcess == NULL) {
+        std::cerr << "Ошибка: Не удалось открыть процесс PID=" << pid << " для завершения. Код ошибки: " << GetLastError() << std::endl;
+        return false;
+    }
+
+    // Завершаем процесс
+    if (!TerminateProcess(hProcess, 1)) { // 1 - код выхода
+        std::cerr << "Ошибка: Не удалось завершить процесс PID=" << pid << ". Код ошибки: " << GetLastError() << std::endl;
+        CloseHandle(hProcess); // Закрываем хэндл в случае ошибки
+        return false;
+    }
+
+    // Закрываем хэндл процесса
+    CloseHandle(hProcess);
+    std::cout << "Процесс PID=" << pid << " успешно завершен." << std::endl;
+    return true;
 }
+
 
 
 //// Главная функция сервера
-//int main() {
-//    setlocale(LC_ALL, "");
-//
-//    // Инициализация Winsock
-//    if (!InitWinsock()) {
-//        std::cerr << "Ошибка WSAStartup!" << std::endl;  // Если не удалось инициализировать Winsock
-//        return 1;  // Завершаем выполнение программы
-//    }
-//
-//    // Создание сокета для прослушивания
-//    SOCKET listenSocket = CreateListenSocket();
-//    if (listenSocket == INVALID_SOCKET) {
-//        WSACleanup();  // Очистка Winsock
-//        return 1;  // Завершаем выполнение программы, если сокет не был создан
-//    }
-//
-//    // Привязка сокета
-//    if (!BindSocket(listenSocket)) {
-//        closesocket(listenSocket);  // Закрытие сокета, если привязка не удалась
-//        WSACleanup();  // Очистка Winsock
-//        return 1;  // Завершаем выполнение программы
-//    }
-//
-//    // Начало прослушивания на сокете
-//    if (!StartListening(listenSocket)) {
-//        closesocket(listenSocket);  // Закрытие сокета, если не удалось начать прослушивание
-//        WSACleanup();  // Очистка Winsock
-//        return 1;  // Завершаем выполнение программы
-//    }
-//
-//    std::cout << "Сервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
-//
-//    // Главный цикл для принятия и обработки клиентских соединений
-//    while (true) {
-//        sockaddr_in clientAddr = {};  // Структура для хранения данных о клиенте
-//        int clientAddrLen = sizeof(clientAddr);
-//
-//        // Принятие входящего соединения
-//        SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
-//        if (clientSocket == INVALID_SOCKET) {  // Если ошибка при принятии соединения
-//            std::cerr << "Ошибка accept: " << WSAGetLastError() << std::endl;
-//            continue;  // Продолжаем прослушивание
-//        }
-//
-//        std::cout << "Клиент подключился." << std::endl;
-//
-//        // Обработка общения с клиентом
-//        HandleClient(clientSocket);
-//
-//        // Закрытие сокета клиента после обработки общения
-//        closesocket(clientSocket);
-//    }
-//
-//    // Закрытие сокета для прослушивания и очистка Winsock
-//    closesocket(listenSocket);
-//    WSACleanup();
-//
-//    return 0;
-//}
+int main() {
+    setlocale(LC_ALL, "");
 
-int main()
-{
-    Taskm taskm;
-    taskm.update();
-    taskm.print();
-    taskm.print();
-    //taskm.save_json();
+    std::cout << "Запуск тестов...\n";
+
+    // запуск тестов
+    Test_InitWinsock();         // Тест для инициализации Winsock
+    Test_CreateListenSocket();  // Тест для создания сокета
+    Test_BindSocket();          // Тест для привязки сокета к порту
+    Test_StartListening();      // Тест для начала прослушивания подключений
+    /*Test_HandleClient();*/        // Тест для обработки клиента // хуйня, ниче не делает
+
+    std::cout << "Тесты завершены.\n";
+
+    // Инициализация Winsock
+    if (!InitWinsock()) {
+        std::cerr << "Ошибка WSAStartup!" << std::endl;  // Если не удалось инициализировать Winsock
+        return 1;  // Завершаем выполнение программы
+    }
+
+    // Создание сокета для прослушивания
+    SOCKET listenSocket = CreateListenSocket();
+    if (listenSocket == INVALID_SOCKET) {
+        WSACleanup();  // Очистка Winsock
+        return 1;  // Завершаем выполнение программы, если сокет не был создан
+    }
+
+    // Привязка сокета
+    if (!BindSocket(listenSocket)) {
+        closesocket(listenSocket);  // Закрытие сокета, если привязка не удалась
+        WSACleanup();  // Очистка Winsock
+        return 1;  // Завершаем выполнение программы
+    }
+
+    // Начало прослушивания на сокете
+    if (!StartListening(listenSocket)) {
+        closesocket(listenSocket);  // Закрытие сокета, если не удалось начать прослушивание
+        WSACleanup();  // Очистка Winsock
+        return 1;  // Завершаем выполнение программы
+    }
+
+    std::cout << "\nСервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
+
+    // --- Создаем ОДИН экземпляр Taskm для всего сервера ---
+    Taskm taskManager;
+    std::cout << "Экземпляр Task Manager создан." << std::endl;
+
+    // --- ЗАПУСК ФОНОВОГО ПОТОКА ---
+    //std::thread jsonUpdateThread(periodicJsonUpdate); // Создаем поток, передаем ему нашу функцию
+    //jsonUpdateThread.detach(); // Отсоединяем поток, чтобы он работал независимо в фоне
+    //// и не блокировал завершение main (хотя наш main и так в вечном цикле)
+    //std::cout << "Запущен фоновый поток для обновления JSON каждые 5 секунд." << std::endl;
+
+    // Главный цикл для принятия и обработки клиентских соединений
+    while (true) {
+        sockaddr_in clientAddr = {};
+        int clientAddrLen = sizeof(clientAddr);
+        SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
+
+        if (clientSocket == INVALID_SOCKET) {
+            std::cerr << "Ошибка accept: " << WSAGetLastError() << std::endl;
+            // Можно добавить небольшую паузу, чтобы не загружать CPU в случае постоянных ошибок accept
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
+
+        // --- Запуск обработки клиента в отдельном потоке ---
+        std::cout << "Клиент подключился (" << clientSocket << "). Запуск потока обработки..." << std::endl;
+        // Передаем сокет по значению (копируется), а taskManager по ссылке
+        std::thread clientThread(HandleClient, clientSocket, std::ref(taskManager));
+        clientThread.detach(); // Отсоединяем поток, чтобы он работал независимо
+    }
+
+    // Закрытие сокета для прослушивания и очистка Winsock
+    closesocket(listenSocket);
+    WSACleanup();
+
+    return 0;
 }
+
+//int main()
+//{
+//    Taskm taskm;
+//    taskm.update();
+//    taskm.save_json();
+//}

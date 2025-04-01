@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TaskManager", "TaskManager\TaskManager.vcxproj", "{9984770E-4FC9-4F93-A3A1-7BB0A40CF3E1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KASANE_TESTO", "KASANE_TESTO\KASANE_TESTO.vcxproj", "{624E452A-D0F5-4506-9948-94A0C2E934E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{9984770E-4FC9-4F93-A3A1-7BB0A40CF3E1}.Release|x64.Build.0 = Release|x64
 		{9984770E-4FC9-4F93-A3A1-7BB0A40CF3E1}.Release|x86.ActiveCfg = Release|Win32
 		{9984770E-4FC9-4F93-A3A1-7BB0A40CF3E1}.Release|x86.Build.0 = Release|Win32
+		{624E452A-D0F5-4506-9948-94A0C2E934E4}.Debug|x64.ActiveCfg = Debug|x64
+		{624E452A-D0F5-4506-9948-94A0C2E934E4}.Debug|x64.Build.0 = Debug|x64
+		{624E452A-D0F5-4506-9948-94A0C2E934E4}.Debug|x86.ActiveCfg = Debug|Win32
+		{624E452A-D0F5-4506-9948-94A0C2E934E4}.Debug|x86.Build.0 = Debug|Win32
+		{624E452A-D0F5-4506-9948-94A0C2E934E4}.Release|x64.ActiveCfg = Release|x64
+		{624E452A-D0F5-4506-9948-94A0C2E934E4}.Release|x64.Build.0 = Release|x64
+		{624E452A-D0F5-4506-9948-94A0C2E934E4}.Release|x86.ActiveCfg = Release|Win32
+		{624E452A-D0F5-4506-9948-94A0C2E934E4}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

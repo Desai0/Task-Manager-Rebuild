@@ -34,3 +34,5 @@
 
 -  Базовый интерфейс с двумя вкладками (WIP).
 -  Индикатор статуса соединения с бэкендом.
+
+Более полная и подробная документация к проекту представлена по ссылке: https://docs.google.com/document/d/17OcSIk85LUgKak0WFeBbTfepVfo8L_qiKOXc1syw53w/edit?usp=sharing

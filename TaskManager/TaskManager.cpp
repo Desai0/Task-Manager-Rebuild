@@ -311,8 +311,6 @@ void Test_StartListening() {
 //    closesocket(clientSocket);
 //} 
 
-
-
 // Функция, которая будет выполняться в отдельном потоке для обновления JSON
 //void periodicJsonUpdate() {
 //    while (true) { // Бесконечный цикл для постоянной работы

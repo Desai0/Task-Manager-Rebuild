@@ -187,12 +187,12 @@ nlohmann::json Taskm::get_json_object()
 
 
 // Реализация метода get
-std::vector<Task> Taskm::get()
-{
-    return taskList; // Возвращает копию
-    // Если нужна только ссылка для чтения, можно сделать:
-    // const std::vector<Task>& Taskm::get() const { return taskList; }
-}
+//std::vector<Task> Taskm::get()
+//{
+//    return taskList; // Возвращает копию
+//    // Если нужна только ссылка для чтения, можно сделать:
+//    // const std::vector<Task>& Taskm::get() const { return taskList; }
+//}
 
 
 // init_taskList realisation, used to set some Task fields needed for cpu tracking

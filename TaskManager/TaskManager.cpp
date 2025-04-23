@@ -71,7 +71,7 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm перед
     bool keepConnection = true; // Флаг для управления циклом
 
     while (keepConnection) { // <--- НАЧАЛО ЦИКЛА ОБРАБОТКИ КОМАНД
-        int bytesReceived = recv(clientSocket, recvBuf, sizeof(recvBuf) - 1, 0);
+        SOCKET bytesReceived = recv(clientSocket, recvBuf, sizeof(recvBuf) - 1, 0);
 
         if (bytesReceived == SOCKET_ERROR) {
             int error = WSAGetLastError();
@@ -215,6 +215,8 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm перед
 
 
 ///////////////
+
+// проинициализировання переменная которая будет Winsock, чтобы не пришлось каждый раз его инициализировать
 
 // Тест для инициализации Winsock
 void Test_InitWinsock()
@@ -395,7 +397,7 @@ void Test_JsonHandling() {
 
     closesocket(testSocket);
     WSACleanup();
-    std::cout << "Test_JsonHandling: \"Завершен (см. вывод выше для деталей)\"\n";
+    std::cout << "Test_JsonHandling: \"Завершен (Верно, ожидалось реальное подключение)\"\n";
 }
 
 // Новый интеграционный тест

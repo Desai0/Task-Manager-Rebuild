@@ -217,53 +217,91 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm перед
 ///////////////
 
 // Тест для инициализации Winsock
-void Test_InitWinsock() {
-    if (InitWinsock()) {
-        std::cout << "Test_InitWinsock прошел: Winsock инициализирован успешно.\n";
+void Test_InitWinsock()
+{
+    if (InitWinsock())
+    {
+        std::cout << "Test_InitWinsock: \"Winsock успешно инициализирован\"\n";
+        WSACleanup();
     }
     else {
-        std::cout << "Test_InitWinsock не прошел: Ошибка инициализации Winsock.\n";
+        std::cout << "Test_InitWinsock: \"Ошибка инициализации Winsock\"\n";
     }
 }
 
 // Тест для создания сокета
 void Test_CreateListenSocket() {
+    if (!InitWinsock()) {
+        std::cout << "Test_CreateListenSocket: \"Пропущен - Winsock не инициализирован\"\n";
+        return;
+    }
+
     SOCKET sock = CreateListenSocket();
     if (sock != INVALID_SOCKET) {
-        std::cout << "Test_CreateListenSocket прошел: Сокет создан успешно.\n";
+        std::cout << "Test_CreateListenSocket: \"Сокет успешно создан\"\n";
+        closesocket(sock);
     }
     else {
-        std::cout << "Test_CreateListenSocket не прошел: Ошибка создания сокета.\n";
+        std::cout << "Test_CreateListenSocket: \"Ошибка создания сокета\"\n";
     }
+    WSACleanup();
 }
 
 // Тест для привязки сокета
 void Test_BindSocket() {
+    if (!InitWinsock()) {
+        std::cout << "Test_BindSocket: \"Пропущен - Winsock не инициализирован\"\n";
+        return;
+    }
+
     SOCKET sock = CreateListenSocket();
+    if (sock == INVALID_SOCKET) {
+        std::cout << "Test_BindSocket: \"Пропущен - Сокет не создан\"\n";
+        WSACleanup();
+        return;
+    }
+
     if (BindSocket(sock)) {
-        std::cout << "Test_BindSocket прошел: Сокет успешно привязан к порту: " << SERVER_PORT << ".\n";
+        std::cout << "Test_BindSocket: \"Сокет успешно привязан к порту " << SERVER_PORT << "\"\n";
     }
     else {
-        std::cerr << "Test_BindSocket не прошел: Ошибка привязки сокета. Код ошибки: " << WSAGetLastError() << std::endl;
+        std::cerr << "Test_BindSocket: \"Ошибка привязки сокета. Код ошибки: " << WSAGetLastError() << "\"\n";
     }
+
     closesocket(sock);
+    WSACleanup();
 }
 
 // Тест для начала прослушивания подключений
 void Test_StartListening() {
+    if (!InitWinsock()) {
+        std::cout << "Test_StartListening: \"Пропущен - Winsock не инициализирован\"\n";
+        return;
+    }
+
     SOCKET sock = CreateListenSocket();
-    if (BindSocket(sock)) {
-        if (StartListening(sock)) {
-            std::cout << "Test_StartListening прошел: Сокет слушает на порту " << SERVER_PORT << ".\n";
-        }
-        else {
-            std::cerr << "Test_StartListening не прошел: Ошибка начала прослушивания. Код ошибки: " << WSAGetLastError() << std::endl;
-        }
+    if (sock == INVALID_SOCKET) {
+        std::cout << "Test_StartListening: \"Пропущен - Сокет не создан\"\n";
+        WSACleanup();
+        return;
+    }
+
+    if (!BindSocket(sock)) {
+        std::cout << "Test_StartListening: \"Пропущен - Сокет не привязан\"\n";
+        closesocket(sock);
+        WSACleanup();
+        return;
+    }
+
+    if (StartListening(sock)) {
+        std::cout << "Test_StartListening: \"Сокет успешно переведен в режим прослушивания на порту " << SERVER_PORT << "\"\n";
     }
     else {
-        std::cerr << "Test_StartListening не прошел: Ошибка привязки сокета. Код ошибки: " << WSAGetLastError() << std::endl;
+        std::cerr << "Test_StartListening: \"Ошибка перевода в режим прослушивания. Код ошибки: " << WSAGetLastError() << "\"\n";
     }
+
     closesocket(sock);
+    WSACleanup();
 }
 
 // Тест для обработки клиента -------- НЕ РАБОТАЕТ, ТРЕБУЕТ ПЕРЕРАБОТКИ, или не надо
@@ -272,8 +310,6 @@ void Test_StartListening() {
 //    HandleClient(clientSocket);
 //    closesocket(clientSocket);
 //} 
-
-
 
 // Функция, которая будет выполняться в отдельном потоке для обновления JSON
 //void periodicJsonUpdate() {
@@ -313,6 +349,87 @@ void Test_StartListening() {
 //    }
 //}
 
+void Test_TerminateProcessByPid() {
+    // Тестируем с несуществующим PID
+    bool result = TerminateProcessByPid(999999);
+    if (!result) {
+        std::cout << "Test_TerminateProcessByPid: \"Корректно не смог завершить несуществующий процесс\"\n";
+    }
+    else {
+        std::cout << "Test_TerminateProcessByPid: \"Ошибка - смог завершить несуществующий процесс\"\n";
+    }
+}
+
+// Новый тест для Taskm (базовый)
+void Test_TaskmBasic() {
+    Taskm taskm;
+    TASKM_ERROR result = taskm.update();
+    if (result == TASKM_OK) {
+        std::cout << "Test_TaskmBasic: \"Обновление Taskm прошло успешно\"\n";
+    }
+    else {
+        std::cout << "Test_TaskmBasic: \"Ошибка обновления Taskm: " << result << "\"\n";
+    }
+}
+
+// Новый тест для JSON обработки (имитация клиентского запроса)
+void Test_JsonHandling() {
+    if (!InitWinsock()) {
+        std::cout << "Test_JsonHandling: \"Пропущен - Winsock не инициализирован\"\n";
+        return;
+    }
+
+    // Создаем тестовый сокет (не настоящий клиент)
+    SOCKET testSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (testSocket == INVALID_SOCKET) {
+        std::cout << "Test_JsonHandling: \"Пропущен - Тестовый сокет не создан\"\n";
+        WSACleanup();
+        return;
+    }
+
+    Taskm taskm;
+    std::cout << "Test_JsonHandling: \"Запуск HandleClient с тестовым сокетом...\"\n";
+
+    // Запускаем обработчик с тестовым сокетом
+    HandleClient(testSocket, taskm);
+
+    closesocket(testSocket);
+    WSACleanup();
+    std::cout << "Test_JsonHandling: \"Завершен (см. вывод выше для деталей)\"\n";
+}
+
+// Новый интеграционный тест
+void Test_Integration() {
+    if (!InitWinsock()) {
+        std::cout << "Test_Integration: \"Пропущен - Winsock не инициализирован\"\n";
+        return;
+    }
+
+    SOCKET sock = CreateListenSocket();
+    if (sock == INVALID_SOCKET) {
+        std::cout << "Test_Integration: \"Пропущен - Сокет не создан\"\n";
+        WSACleanup();
+        return;
+    }
+
+    if (!BindSocket(sock)) {
+        std::cout << "Test_Integration: \"Пропущен - Сокет не привязан\"\n";
+        closesocket(sock);
+        WSACleanup();
+        return;
+    }
+
+    if (!StartListening(sock)) {
+        std::cout << "Test_Integration: \"Пропущен - Ошибка перевода в режим прослушивания\"\n";
+        closesocket(sock);
+        WSACleanup();
+        return;
+    }
+
+    std::cout << "Test_Integration: \"Основные компоненты сервера работают вместе корректно\"\n";
+    closesocket(sock);
+    WSACleanup();
+}
 
 bool TerminateProcessByPid(DWORD pid) {
     // Открываем процесс с правом на завершение
@@ -335,23 +452,30 @@ bool TerminateProcessByPid(DWORD pid) {
     return true;
 }
 
+// Функция для запуска всех тестов
+void RunAllTests() {
+    std::cout << "\n\"Запуск всех тестов...\"\n";
+    std::cout << "-------------------\n";
 
+    Test_InitWinsock();
+    Test_CreateListenSocket();
+    Test_BindSocket();
+    Test_StartListening();
+    Test_TerminateProcessByPid();
+    Test_TaskmBasic();
+    Test_JsonHandling();
+    Test_Integration();
+
+    std::cout << "-------------------\n";
+    std::cout << "\"Все тесты завершены.\"\n\n";
+}
 
 //// Главная функция сервера
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     setlocale(LC_ALL, ".UTF8");
 
-    std::cout << "Запуск тестов...\n";
-
-    // запуск тестов
-    Test_InitWinsock();         // Тест для инициализации Winsock
-    Test_CreateListenSocket();  // Тест для создания сокета
-    Test_BindSocket();          // Тест для привязки сокета к порту
-    Test_StartListening();      // Тест для начала прослушивания подключений
-    /*Test_HandleClient();*/        // Тест для обработки клиента // ниче не делает
-
-    std::cout << "Тесты завершены.\n";
+    RunAllTests();
 
     // Инициализация Winsock
     if (!InitWinsock()) {

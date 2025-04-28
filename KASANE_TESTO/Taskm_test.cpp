@@ -27,7 +27,9 @@ bool test_json_search(std::string target = "System")
 
 	for (auto obj : jsonFile["processes"])
 	{
-		if (obj["name"] == target.c_str() || obj["name"] == rm_file_format(target).c_str())
+		if (obj["name"] == target.c_str() ||
+			obj["name"] == rm_file_format(target).c_str() || 
+			rm_file_format(obj["name"]) == target.c_str())
 		{
 			return 1;
 		}
@@ -36,7 +38,13 @@ bool test_json_search(std::string target = "System")
 }
 
 
+
 int main()
 {
-	std::cout << rm_file_format("chromeexe") << std::endl;
+	std::cout << "'System' found: " << (test_json_search() ? "true" : "false") << std::endl;
+	std::cout << "'chrome' found: " << (test_json_search("chrome") ? "true" : "false") << std::endl;
+	std::cout << "'chrome.exe' found: " << (test_json_search("chrome.exe") ? "true" : "false") << std::endl;
+	std::cout << "'fghjk' found: " << (test_json_search("fghjk") ? "true" : "false") << std::endl;
+	std::cout << "'fghjk.sdssdsfs' found: " << (test_json_search("fghjk.sdssdsfs") ? "true" : "false") << std::endl;
+
 }

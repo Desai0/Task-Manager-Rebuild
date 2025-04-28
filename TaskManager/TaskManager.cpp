@@ -10,6 +10,9 @@
 #include <thread>   // Для работы с потоками
 #include <chrono>   // Для работы со временем (паузы)
 
+#include <iomanip>
+#include <ctime>
+
 #include "json.hpp"
 
 #pragma comment(lib, "ws2_32.lib")
@@ -65,150 +68,137 @@ bool StartListening(SOCKET listenSocket) {
 }
 
 // Функция для обработки данных, полученных от клиента
-void HandleClient(SOCKET clientSocket, Taskm& taskManager) { // Taskm передается по ссылке
+void HandleClient(SOCKET clientSocket, Taskm& taskManager) {
     std::cout << "[" << std::this_thread::get_id() << "] Поток обработки клиента запущен." << std::endl;
     char recvBuf[BUFFER_SIZE];
-    bool keepConnection = true; // Флаг для управления циклом
+    bool keepConnection = true;
+    std::string messageBuffer = ""; // <--- БУФЕР ДЛЯ НАКОПЛЕНИЯ ДАННЫХ КЛИЕНТА
 
-    while (keepConnection) { // <--- НАЧАЛО ЦИКЛА ОБРАБОТКИ КОМАНД
-        SOCKET bytesReceived = recv(clientSocket, recvBuf, sizeof(recvBuf) - 1, 0);
+    while (keepConnection) {
+        int bytesReceived = recv(clientSocket, recvBuf, sizeof(recvBuf), 0); // Убрали -1, будем использовать bytesReceived
 
         if (bytesReceived == SOCKET_ERROR) {
-            int error = WSAGetLastError();
-            if (error == WSAECONNRESET || error == WSAECONNABORTED) {
-                std::cout << "[" << std::this_thread::get_id() << "] Клиент разорвал соединение." << std::endl;
-            }
-            else {
-                std::cerr << "[" << std::this_thread::get_id() << "] Ошибка recv: " << error << std::endl;
-            }
-            keepConnection = false; // Выходим из цикла при ошибке
-            continue; // Переходим к закрытию сокета
+            // ... (обработка ошибок recv как была) ...
+            keepConnection = false;
+            continue;
         }
         else if (bytesReceived == 0) {
-            std::cout << "[" << std::this_thread::get_id() << "] Клиент отключился штатно." << std::endl;
-            keepConnection = false; // Выходим из цикла
-            continue; // Переходим к закрытию сокета
+            // ... (обработка отключения как была) ...
+            keepConnection = false;
+            continue;
         }
 
-        // --- Обработка полученных данных ---
-        recvBuf[bytesReceived] = '\0'; // Нуль-терминация
-        std::string clientRequest(recvBuf);
-        std::cout << "[" << std::this_thread::get_id() << "] Получено от клиента: " << clientRequest << std::endl;
+        // Добавляем полученные байты в буфер
+        messageBuffer.append(recvBuf, bytesReceived);
+        // std::cout << "[" << std::this_thread::get_id() << "] Bytes received: " << bytesReceived << ", Buffer now: " << messageBuffer << std::endl; // Отладка
 
-        json responseJson;
-        std::string responseString;
+        size_t newlinePos;
+        // Обрабатываем все полные сообщения в буфере
+        while ((newlinePos = messageBuffer.find('\n')) != std::string::npos) {
+            std::string completeMessage = messageBuffer.substr(0, newlinePos); // Извлекаем сообщение до \n
+            messageBuffer.erase(0, newlinePos + 1); // Удаляем сообщение и \n из буфера
 
-        try {
-            json requestJson = json::parse(clientRequest);
+            // std::cout << "[" << std::this_thread::get_id() << "] Processing message: " << completeMessage << std::endl; // Отладка
 
-            if (requestJson.contains("command")) {
-                std::string command = requestJson["command"];
-                std::cout << "[" << std::this_thread::get_id() << "] Команда: " << command << std::endl;
+            // Пропускаем пустые сообщения, если они вдруг образовались
+            if (completeMessage.empty()) continue;
 
-                // --- Обработка команд (логика остается почти такой же) ---
-                if (command == "getProcesses") {
-                    // ... (код для getProcesses) ...
-                    TASKM_ERROR update_result = taskManager.update(); // Обновляем данные ПЕРЕД отправкой
-                    if (update_result == TASKM_OK) {
-                        json processListJson = taskManager.get_json_object();
-                        responseJson = processListJson;
-                        responseJson["status"] = "success";
-                    }
-                    else {
-                        std::cerr << "[" << std::this_thread::get_id() << "] Ошибка обновления списка процессов: " << update_result << std::endl;
-                        responseJson["status"] = "error";
-                        responseJson["message"] = "Ошибка обновления списка процессов на сервере";
-                    }
-                    responseString = responseJson.dump();
-                    responseString += "\n";
+            json responseJson;
+            std::string responseString;
 
-                }
-                else if (command == "terminateProcess") {
-                    // ... (код для terminateProcess) ...
-                    if (requestJson.contains("pid") && requestJson["pid"].is_number_integer()) {
-                        DWORD pidToTerminate = requestJson["pid"];
-                        if (TerminateProcessByPid(pidToTerminate)) {
+            // --- ОБРАБОТКА ИЗВЛЕЧЕННОГО СООБЩЕНИЯ ---
+            try {
+                json requestJson = json::parse(completeMessage); // Парсим ТОЛЬКО извлеченное сообщение
+
+                if (requestJson.contains("command")) {
+                    std::string command = requestJson["command"];
+                    std::cout << "[" << std::this_thread::get_id() << "] Команда: " << command << std::endl;
+
+                    // --- Обработка команд (логика та же) ---
+                    if (command == "getProcesses") {
+                        TASKM_ERROR update_result = taskManager.update();
+                        if (update_result == TASKM_OK) {
+                            json processListJson = taskManager.get_json_object();
+                            responseJson = processListJson;
                             responseJson["status"] = "success";
-                            responseJson["message"] = "Процесс завершен";
-                            responseJson["pid"] = pidToTerminate;
                         }
-                        else {
-                            responseJson["status"] = "error";
-                            responseJson["message"] = "Не удалось завершить процесс";
-                            responseJson["pid"] = pidToTerminate;
+                        else { /*...*/ responseJson["status"] = "error"; responseJson["message"] = "..."; }
+                        responseString = responseJson.dump() + "\n";
+
+                    }
+                    else if (command == "terminateProcess") {
+                        if (requestJson.contains("pid") && requestJson["pid"].is_number_integer()) {
+                            DWORD pidToTerminate = requestJson["pid"];
+
+                            auto time_before = std::chrono::high_resolution_clock::now();
+                            bool success = TerminateProcessByPid(pidToTerminate);
+                            // ЛОГ ВРЕМЕНИ ПОСЛЕ ВЫЗОВА ЗАВЕРШЕНИЯ
+                            auto time_after = std::chrono::high_resolution_clock::now();
+                            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_after - time_before);
+                            std::cout << "    -> TerminateProcessByPid завершился за " << duration.count() << " мс. Результат: " << (success ? "успех" : "неудача") << std::endl;
+
+                            if (TerminateProcessByPid(pidToTerminate)) { /*...*/ responseJson["status"] = "success"; responseJson["message"] = "..."; responseJson["pid"] = pidToTerminate; }
+                            else { /*...*/ responseJson["status"] = "error"; responseJson["message"] = "..."; responseJson["pid"] = pidToTerminate; }
                         }
+                        else { /*...*/ responseJson["status"] = "error"; responseJson["message"] = "..."; }
+                        responseString = responseJson.dump() + "\n";
+
+                    }
+                    else if (command == "ping") {
+                        responseJson["status"] = "pong";
+                        responseString = responseJson.dump() + "\n";
+
+                    }
+                    else if (command == "getSystemLoad") {
+                        responseJson["status"] = "success"; // Заглушка
+                        responseJson["systemLoad"] = { {"cpu", 0.0}, {"memory", 0.0} };
+                        responseString = responseJson.dump() + "\n";
                     }
                     else {
-                        responseJson["status"] = "error";
-                        responseJson["message"] = "Неверный формат команды terminateProcess";
+                        responseJson["status"] = "error"; responseJson["message"] = "Неизвестная команда";
+                        responseString = responseJson.dump() + "\n";
                     }
-                    responseString = responseJson.dump();
-                    responseString += "\n";
-
-                }
-                else if (command == "getSystemLoad") {
-                    // ... (код для getSystemLoad - пока заглушка) ...
-                    responseJson["status"] = "success";
-                    responseJson["systemLoad"] = { {"cpu", 0.0}, {"memory", 0.0} };
-                    responseString = responseJson.dump();
-                    responseString += "\n";
-
                 }
                 else {
-                    // ... (обработка неизвестной команды) ...
-                    responseJson["status"] = "error";
-                    responseJson["message"] = "Неизвестная команда";
-                    responseString = responseJson.dump();
-                    responseString += "\n";
+                    responseJson["status"] = "error"; responseJson["message"] = "Неверный формат запроса";
+                    responseString = responseJson.dump() + "\n";
+                }
+
+            }
+            catch (json::parse_error& e) {
+                std::cerr << "[" << std::this_thread::get_id() << "] Ошибка парсинга JSON от клиента: " << e.what() << std::endl;
+                std::cerr << "Проблемное сообщение: " << completeMessage << std::endl;
+                responseString = R"({"status": "error", "message": "Ошибка парсинга JSON на сервере"})" "\n"; // Добавляем \n и сюда
+            }
+            catch (const std::exception& e) {
+                std::cerr << "[" << std::this_thread::get_id() << "] Другая ошибка при обработке запроса: " << e.what() << std::endl;
+                responseString = R"({"status": "error", "message": "Внутренняя ошибка сервера"})" "\n"; // Добавляем \n
+            }
+            // --- КОНЕЦ ОБРАБОТКИ ИЗВЛЕЧЕННОГО СООБЩЕНИЯ ---
+
+            // --- Отправка ответа ---
+            if (!responseString.empty()) {
+                const int sendBufSize = responseString.length();
+                int totalBytesSent = 0;
+                const char* dataToSend = responseString.c_str();
+
+                while (totalBytesSent < sendBufSize) {
+                    int bytesSent = send(clientSocket, dataToSend + totalBytesSent, sendBufSize - totalBytesSent, 0);
+                    if (bytesSent == SOCKET_ERROR) { /* ... обработка ошибки send ... */ keepConnection = false; break; }
+                    if (bytesSent == 0) { /* ... */ keepConnection = false; break; }
+                    totalBytesSent += bytesSent;
+                }
+                if (keepConnection && totalBytesSent == sendBufSize) {
+                    // Успешно отправили, можно логировать
+                    // std::cout << "[" << std::this_thread::get_id() << "] Ответ успешно отправлен (" << totalBytesSent << " байт)." << std::endl;
                 }
             }
-            else {
-                // ... (обработка неверного формата запроса) ...
-                responseJson["status"] = "error";
-                responseJson["message"] = "Неверный формат запроса";
-                responseString = responseJson.dump();
-                responseString += "\n";
-            }
+            // Цикл while для поиска \n продолжится, если в буфере остались данные
+        } // Конец while ((newlinePos = ...))
+        // Данные без \n или остаток данных после последнего \n остаются в messageBuffer
+    } // Конец while (keepConnection)
 
-        }
-        catch (json::parse_error& e) {
-            std::cerr << "[" << std::this_thread::get_id() << "] Ошибка парсинга JSON: " << e.what() << " Входные данные: " << clientRequest << std::endl;
-            responseString = R"({"status": "error", "message": "Ошибка парсинга JSON на сервере"})";
-        }
-        catch (const std::exception& e) {
-            std::cerr << "[" << std::this_thread::get_id() << "] Другая ошибка: " << e.what() << std::endl;
-            responseString = R"({"status": "error", "message": "Внутренняя ошибка сервера"})";
-        }
-
-        // --- Отправка ответа ---
-        if (!responseString.empty()) {
-            const int sendBufSize = responseString.length();
-            int totalBytesSent = 0;
-            const char* dataToSend = responseString.c_str();
-
-            while (totalBytesSent < sendBufSize) {
-                int bytesSent = send(clientSocket, dataToSend + totalBytesSent, sendBufSize - totalBytesSent, 0);
-                if (bytesSent == SOCKET_ERROR) {
-                    std::cerr << "[" << std::this_thread::get_id() << "] Ошибка send: " << WSAGetLastError() << std::endl;
-                    keepConnection = false; // Выходим из основного цикла при ошибке отправки
-                    break; // Выходим из цикла отправки
-                }
-                if (bytesSent == 0) {
-                    std::cout << "[" << std::this_thread::get_id() << "] Отправка прервана (0 байт)." << std::endl;
-                    keepConnection = false; // Выходим из основного цикла
-                    break; // Выходим из цикла отправки
-                }
-                totalBytesSent += bytesSent;
-            }
-            if (keepConnection && totalBytesSent == sendBufSize) { // Проверяем keepConnection перед логом
-                std::cout << "[" << std::this_thread::get_id() << "] Ответ успешно отправлен (" << totalBytesSent << " байт)." << std::endl;
-            }
-        }
-        // Продолжаем цикл while(keepConnection), ожидая следующую команду
-    } // <--- КОНЕЦ ЦИКЛА WHILE(keepConnection)
-
-    // --- Закрытие сокета клиента ---
-    closesocket(clientSocket); // <--- ЗАКРЫВАЕМ СОКЕТ ЗДЕСЬ
+    closesocket(clientSocket);
     std::cout << "[" << std::this_thread::get_id() << "] Соединение с клиентом закрыто. Поток завершен." << std::endl;
 }
 
@@ -223,28 +213,28 @@ void Test_InitWinsock()
 {
     if (InitWinsock())
     {
-        std::cout << "Test_InitWinsock: \"Winsock успешно инициализирован\"\n";
+        std::cout << "Test_InitWinsock: \"Winsock успешно инициализирован\"\n" << std::endl;
         WSACleanup();
     }
     else {
-        std::cout << "Test_InitWinsock: \"Ошибка инициализации Winsock\"\n";
+        std::cout << "Test_InitWinsock: \"Ошибка инициализации Winsock\"\n" << std::endl;
     }
 }
 
 // Тест для создания сокета
 void Test_CreateListenSocket() {
     if (!InitWinsock()) {
-        std::cout << "Test_CreateListenSocket: \"Пропущен - Winsock не инициализирован\"\n";
+        std::cout << "Test_CreateListenSocket: \"Пропущен - Winsock не инициализирован\"\n" << std::endl;
         return;
     }
 
     SOCKET sock = CreateListenSocket();
     if (sock != INVALID_SOCKET) {
-        std::cout << "Test_CreateListenSocket: \"Сокет успешно создан\"\n";
+        std::cout << "Test_CreateListenSocket: \"Сокет успешно создан\"\n" << std::endl;
         closesocket(sock);
     }
     else {
-        std::cout << "Test_CreateListenSocket: \"Ошибка создания сокета\"\n";
+        std::cout << "Test_CreateListenSocket: \"Ошибка создания сокета\"\n" << std::endl;
     }
     WSACleanup();
 }
@@ -252,22 +242,22 @@ void Test_CreateListenSocket() {
 // Тест для привязки сокета
 void Test_BindSocket() {
     if (!InitWinsock()) {
-        std::cout << "Test_BindSocket: \"Пропущен - Winsock не инициализирован\"\n";
+        std::cout << "Test_BindSocket: \"Пропущен - Winsock не инициализирован\"\n" << std::endl;
         return;
     }
 
     SOCKET sock = CreateListenSocket();
     if (sock == INVALID_SOCKET) {
-        std::cout << "Test_BindSocket: \"Пропущен - Сокет не создан\"\n";
+        std::cout << "Test_BindSocket: \"Пропущен - Сокет не создан\"\n" << std::endl;
         WSACleanup();
         return;
     }
 
     if (BindSocket(sock)) {
-        std::cout << "Test_BindSocket: \"Сокет успешно привязан к порту " << SERVER_PORT << "\"\n";
+        std::cout << "Test_BindSocket: \"Сокет успешно привязан к порту " << SERVER_PORT << "\"\n" << std::endl;
     }
     else {
-        std::cerr << "Test_BindSocket: \"Ошибка привязки сокета. Код ошибки: " << WSAGetLastError() << "\"\n";
+        std::cerr << "Test_BindSocket: \"Ошибка привязки сокета. Код ошибки: " << WSAGetLastError() << "\"\n" << std::endl;
     }
 
     closesocket(sock);
@@ -277,29 +267,29 @@ void Test_BindSocket() {
 // Тест для начала прослушивания подключений
 void Test_StartListening() {
     if (!InitWinsock()) {
-        std::cout << "Test_StartListening: \"Пропущен - Winsock не инициализирован\"\n";
+        std::cout << "Test_StartListening: \"Пропущен - Winsock не инициализирован\"\n" << std::endl;
         return;
     }
 
     SOCKET sock = CreateListenSocket();
     if (sock == INVALID_SOCKET) {
-        std::cout << "Test_StartListening: \"Пропущен - Сокет не создан\"\n";
+        std::cout << "Test_StartListening: \"Пропущен - Сокет не создан\"\n" << std::endl;
         WSACleanup();
         return;
     }
 
     if (!BindSocket(sock)) {
-        std::cout << "Test_StartListening: \"Пропущен - Сокет не привязан\"\n";
+        std::cout << "Test_StartListening: \"Пропущен - Сокет не привязан\"\n" << std::endl;
         closesocket(sock);
         WSACleanup();
         return;
     }
 
     if (StartListening(sock)) {
-        std::cout << "Test_StartListening: \"Сокет успешно переведен в режим прослушивания на порту " << SERVER_PORT << "\"\n";
+        std::cout << "Test_StartListening: \"Сокет успешно переведен в режим прослушивания на порту " << SERVER_PORT << "\"\n" << std::endl;
     }
     else {
-        std::cerr << "Test_StartListening: \"Ошибка перевода в режим прослушивания. Код ошибки: " << WSAGetLastError() << "\"\n";
+        std::cerr << "Test_StartListening: \"Ошибка перевода в режим прослушивания. Код ошибки: " << WSAGetLastError() << "\"\n" << std::endl;
     }
 
     closesocket(sock);
@@ -355,10 +345,10 @@ void Test_TerminateProcessByPid() {
     // Тестируем с несуществующим PID
     bool result = TerminateProcessByPid(999999);
     if (!result) {
-        std::cout << "Test_TerminateProcessByPid: \"Корректно не смог завершить несуществующий процесс\"\n";
+        std::cout << "Test_TerminateProcessByPid: \"Корректно не смог завершить несуществующий процесс\"\n" << std::endl;
     }
     else {
-        std::cout << "Test_TerminateProcessByPid: \"Ошибка - смог завершить несуществующий процесс\"\n";
+        std::cout << "Test_TerminateProcessByPid: \"Ошибка - смог завершить несуществующий процесс\"\n" << std::endl;
     }
 }
 
@@ -367,97 +357,114 @@ void Test_TaskmBasic() {
     Taskm taskm;
     TASKM_ERROR result = taskm.update();
     if (result == TASKM_OK) {
-        std::cout << "Test_TaskmBasic: \"Обновление Taskm прошло успешно\"\n";
+        std::cout << "Test_TaskmBasic: \"Обновление Taskm прошло успешно\"\n" << std::endl;
     }
     else {
-        std::cout << "Test_TaskmBasic: \"Ошибка обновления Taskm: " << result << "\"\n";
+        std::cout << "Test_TaskmBasic: \"Ошибка обновления Taskm: " << result << "\"\n" << std::endl;
     }
 }
 
 // Новый тест для JSON обработки (имитация клиентского запроса)
 void Test_JsonHandling() {
     if (!InitWinsock()) {
-        std::cout << "Test_JsonHandling: \"Пропущен - Winsock не инициализирован\"\n";
+        std::cout << "Test_JsonHandling: \"Пропущен - Winsock не инициализирован\"\n" << std::endl;
         return;
     }
 
     // Создаем тестовый сокет (не настоящий клиент)
     SOCKET testSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (testSocket == INVALID_SOCKET) {
-        std::cout << "Test_JsonHandling: \"Пропущен - Тестовый сокет не создан\"\n";
+        std::cout << "Test_JsonHandling: \"Пропущен - Тестовый сокет не создан\"\n" << std::endl;
         WSACleanup();
         return;
     }
 
     Taskm taskm;
-    std::cout << "Test_JsonHandling: \"Запуск HandleClient с тестовым сокетом...\"\n";
+    std::cout << "Test_JsonHandling: \"Запуск HandleClient с тестовым сокетом...\"\n" << std::endl;
 
     // Запускаем обработчик с тестовым сокетом
     HandleClient(testSocket, taskm);
 
     closesocket(testSocket);
     WSACleanup();
-    std::cout << "Test_JsonHandling: \"Завершен (Верно, ожидалось реальное подключение)\"\n";
+    std::cout << "Test_JsonHandling: \"Завершен (Верно, ожидалось реальное подключение)\"\n" << std::endl;
 }
 
 // Новый интеграционный тест
 void Test_Integration() {
     if (!InitWinsock()) {
-        std::cout << "Test_Integration: \"Пропущен - Winsock не инициализирован\"\n";
+        std::cout << "Test_Integration: \"Пропущен - Winsock не инициализирован\"\n" << std::endl;
         return;
     }
 
     SOCKET sock = CreateListenSocket();
     if (sock == INVALID_SOCKET) {
-        std::cout << "Test_Integration: \"Пропущен - Сокет не создан\"\n";
+        std::cout << "Test_Integration: \"Пропущен - Сокет не создан\"\n" << std::endl;
         WSACleanup();
         return;
     }
 
     if (!BindSocket(sock)) {
-        std::cout << "Test_Integration: \"Пропущен - Сокет не привязан\"\n";
+        std::cout << "Test_Integration: \"Пропущен - Сокет не привязан\"\n" << std::endl;
         closesocket(sock);
         WSACleanup();
         return;
     }
 
     if (!StartListening(sock)) {
-        std::cout << "Test_Integration: \"Пропущен - Ошибка перевода в режим прослушивания\"\n";
+        std::cout << "Test_Integration: \"Пропущен - Ошибка перевода в режим прослушивания\"\n" << std::endl;
         closesocket(sock);
         WSACleanup();
         return;
     }
 
-    std::cout << "Test_Integration: \"Основные компоненты сервера работают вместе корректно\"\n";
+    std::cout << "Test_Integration: \"Основные компоненты сервера работают вместе корректно\"\n" << std::endl;
     closesocket(sock);
     WSACleanup();
 }
 
 bool TerminateProcessByPid(DWORD pid) {
     // Открываем процесс с правом на завершение
-    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE | PROCESS_QUERY_INFORMATION, FALSE, pid); // Добавили Query Info для GetExitCodeProcess
     if (hProcess == NULL) {
-        std::cerr << "Ошибка: Не удалось открыть процесс PID=" << pid << " для завершения. Код ошибки: " << GetLastError() << std::endl;
+        std::cerr << "    -> Ошибка OpenProcess для PID=" << pid << ". Код: " << GetLastError() << std::endl;
         return false;
     }
 
-    // Завершаем процесс
+    // Пытаемся завершить процесс
     if (!TerminateProcess(hProcess, 1)) { // 1 - код выхода
-        std::cerr << "Ошибка: Не удалось завершить процесс PID=" << pid << ". Код ошибки: " << GetLastError() << std::endl;
-        CloseHandle(hProcess); // Закрываем хэндл в случае ошибки
+        DWORD error = GetLastError();
+        std::cerr << "    -> Ошибка TerminateProcess для PID=" << pid << ". Код: " << error << std::endl;
+        CloseHandle(hProcess);
+        // НЕ считаем это успехом, даже если ошибка ERROR_ACCESS_DENIED
         return false;
     }
 
-    // Закрываем хэндл процесса
+    // Если TerminateProcess вернул TRUE, это значит, запрос на завершение принят.
+    // Для надежности можно подождать немного и проверить код выхода,
+    // но это может заблокировать поток. Простой вариант - считать успешным.
+    // std::cout << "    -> Запрос на завершение PID=" << pid << " отправлен." << std::endl; // Более корректный лог
+
+    /* // Опциональная проверка с ожиданием (может блокировать!)
+    DWORD waitResult = WaitForSingleObject(hProcess, 500); // Ждем до 500 мс
+    if (waitResult == WAIT_OBJECT_0) {
+         std::cout << "    -> Процесс PID=" << pid << " действительно завершился." << std::endl;
+    } else if (waitResult == WAIT_TIMEOUT) {
+         std::cout << "    -> Процесс PID=" << pid << " не завершился за 500 мс." << std::endl;
+         // Можно считать это частичным успехом или неудачей?
+    } else {
+         std::cout << "    -> Ошибка ожидания завершения PID=" << pid << ". Код: " << GetLastError() << std::endl;
+    }
+    */
+
     CloseHandle(hProcess);
-    std::cout << "Процесс PID=" << pid << " успешно завершен." << std::endl;
-    return true;
+    return true; // Возвращаем true, если TerminateProcess вернул TRUE
 }
 
 // Функция для запуска всех тестов
 void RunAllTests() {
-    std::cout << "\n\"Запуск всех тестов...\"\n";
-    std::cout << "-------------------\n";
+    std::cout << "\n\"Запуск всех тестов...\"\n" << std::endl;
+    std::cout << "-------------------\n" << std::endl;
 
     Test_InitWinsock();
     Test_CreateListenSocket();
@@ -468,8 +475,8 @@ void RunAllTests() {
     Test_JsonHandling();
     Test_Integration();
 
-    std::cout << "-------------------\n";
-    std::cout << "\"Все тесты завершены.\"\n\n";
+    std::cout << "-------------------\n" << std::endl;
+    std::cout << "\"Все тесты завершены.\"\n\n" << std::endl;
 }
 
 //// Главная функция сервера

@@ -162,12 +162,18 @@ TASKM_ERROR Taskm::save_json_totals()
         return TASKM_EMPTY_ERROR;
     }
 
+    //Memory
+    MEMORYSTATUSEX mem;
+    mem.dwLength = sizeof(MEMORYSTATUSEX);
+    GlobalMemoryStatusEx(&mem);
+
     nlohmann::json jsonFile;
     jsonFile["totals"] = nlohmann::json::object();
 
     jsonFile["totals"] =
     {
-        {"CPU", Taskm::CPU_total_get()}
+        {"CPU", Taskm::CPU_total_get()},
+        {"RAM", mem.ullTotalPhys / MB_SIZE / 8}
     };
 
     std::ofstream file("totals_output.json");
@@ -218,9 +224,15 @@ nlohmann::json Taskm::get_json_totals()
     nlohmann::json jsonFile;
     jsonFile["totals"] = nlohmann::json::object();
 
+    //Memory
+    MEMORYSTATUSEX mem;
+    mem.dwLength = sizeof(MEMORYSTATUSEX);
+    GlobalMemoryStatusEx(&mem);
+
     jsonFile["totals"] =
     {
-        {"CPU", Taskm::CPU_total_get()}
+        {"CPU", Taskm::CPU_total_get()},
+        {"RAM",  mem.ullTotalPhys / MB_SIZE / 8}
     };
 
     return jsonFile;

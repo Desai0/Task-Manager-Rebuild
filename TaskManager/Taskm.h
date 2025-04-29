@@ -5,6 +5,11 @@
 #include <Psapi.h>
 #include <string>
 
+#include <TCHAR.h>
+#include <Pdh.h>
+#pragma comment(lib, "pdh.lib")
+
+
 #include "json.hpp"
 
 #define MB_SIZE 1000000.0
@@ -36,28 +41,15 @@ struct Task {
 	HANDLE get_handle();
 };
 
-// Probably not gonna use that, but maybe, so commented for now
-//struct TaskList {
-//	std::vector<Task> taskList;
-//
-//	Task operator[] (int idx)
-//	{
-//		return taskList[idx];
-//	}
-//
-//	void push_back(Task t)
-//	{
-//		taskList.push_back(t);
-//	}
-//
-//	int size() { return taskList.size(); }
-//	bool empty() { return taskList.empty(); }
-//};
-
 class Taskm
 {
 private:
     std::vector<Task> taskList;
+
+	//CPU TOTAL
+	PDH_HQUERY cpuQuery;
+	PDH_HCOUNTER cpuTotal;
+
     static std::string wchar_to_string(WCHAR* wch); // Объявление статичного метода
     void init_taskList();
     void update_cpuUsage(Task& task);
@@ -70,6 +62,14 @@ public:
     TASKM_ERROR save_json(); // Можно оставить, если сохранение в файл еще нужно
     std::vector<Task> get();
     nlohmann::json get_json_object(); // <-- НОВЫЙ МЕТОД
+
+	// totals
+	TASKM_ERROR save_json_totals();
+	nlohmann::json get_json_totals();
+
+	//CPU Total
+	void CPU_total_init();
+	double CPU_total_get();
 
     Taskm(Taskm const&) = delete;
     void operator= (Taskm const&) = delete;

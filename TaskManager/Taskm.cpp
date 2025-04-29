@@ -24,6 +24,8 @@ TASKM_ERROR Taskm::update()
     // Очищаем старый список перед обновлением
     taskList.clear();
 
+    Taskm::CPU_total_init();
+
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snap == INVALID_HANDLE_VALUE) { // Проверяем результат CreateToolhelp32Snapshot
         // Можно добавить логирование ошибки WSAGetLastError()
@@ -127,7 +129,7 @@ TASKM_ERROR Taskm::save_json()
 
     nlohmann::json jsonFile;
     jsonFile["processes"] = nlohmann::json::array(); // Инициализируем как массив
-
+    
     for (const auto& task : taskList) // Используем const&
     {
         nlohmann::json taskObject =
@@ -141,6 +143,7 @@ TASKM_ERROR Taskm::save_json()
         jsonFile["processes"].push_back(taskObject);
     }
 
+
     std::ofstream file("output.json");
     if (!file.is_open()) { // Проверяем, открылся ли файл
         std::cerr << "Ошибка: Не удалось открыть output.json для записи." << std::endl;
@@ -152,6 +155,31 @@ TASKM_ERROR Taskm::save_json()
     return TASKM_OK; // Возвращаем OK после успешной записи
 }
 
+TASKM_ERROR Taskm::save_json_totals()
+{
+    if (taskList.empty())
+    {
+        return TASKM_EMPTY_ERROR;
+    }
+
+    nlohmann::json jsonFile;
+    jsonFile["totals"] = nlohmann::json::object();
+
+    jsonFile["totals"] =
+    {
+        {"CPU", Taskm::CPU_total_get()}
+    };
+
+    std::ofstream file("totals_output.json");
+    if (!file.is_open()) { // Проверяем, открылся ли файл
+        std::cerr << "Ошибка: Не удалось открыть output.json для записи." << std::endl;
+        return TASKM_GENERIC_ERROR; // Или специфичная ошибка файла
+    }
+    file << jsonFile.dump(4); // dump(4) для красивого вывода с отступами
+    file.close(); // Хотя ofstream закроется сам в деструкторе, явно закрыть не помешает
+
+    return TASKM_OK; // Возвращаем OK после успешной записи
+}
 
 nlohmann::json Taskm::get_json_object()
 {
@@ -185,7 +213,18 @@ nlohmann::json Taskm::get_json_object()
     return jsonFile;
 }
 
+nlohmann::json Taskm::get_json_totals()
+{
+    nlohmann::json jsonFile;
+    jsonFile["totals"] = nlohmann::json::object();
 
+    jsonFile["totals"] =
+    {
+        {"CPU", Taskm::CPU_total_get()}
+    };
+
+    return jsonFile;
+}
 // Реализация метода get
 //std::vector<Task> Taskm::get()
 //{
@@ -258,6 +297,23 @@ void Taskm::update_cpuUsage(Task & task)
     task.CPUlastUser = user;
 }
 
+//CPU total
+
+void Taskm::CPU_total_init() {
+    PdhOpenQueryW(NULL, NULL, &cpuQuery);
+    // You can also use L"\\Processor(*)\\% Processor Time" and get individual CPU values with PdhGetFormattedCounterArray()
+    PdhAddEnglishCounter(cpuQuery, L"\\Processor(_Total)\\% Processor Time", NULL, &cpuTotal);
+    PdhCollectQueryData(cpuQuery);
+}
+
+double Taskm::CPU_total_get()
+{
+    PDH_FMT_COUNTERVALUE counterVal;
+
+    PdhCollectQueryData(cpuQuery);
+    PdhGetFormattedCounterValue(cpuTotal, PDH_FMT_DOUBLE, NULL, &counterVal);
+    return counterVal.doubleValue;
+}
 
 // Реализация статичного метода wchar_to_string
 std::string Taskm::wchar_to_string(WCHAR* wch)

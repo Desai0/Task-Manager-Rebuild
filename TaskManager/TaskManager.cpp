@@ -480,81 +480,81 @@ void RunAllTests() {
 }
 
 //// Главная функция сервера
-int main() {
-    SetConsoleOutputCP(CP_UTF8);
-    setlocale(LC_ALL, ".UTF8");
-
-    RunAllTests();
-
-    // Инициализация Winsock
-    if (!InitWinsock()) {
-        std::cerr << "Ошибка WSAStartup!" << std::endl;  // Если не удалось инициализировать Winsock
-        return 1;  // Завершаем выполнение программы
-    }
-
-    // Создание сокета для прослушивания
-    SOCKET listenSocket = CreateListenSocket();
-    if (listenSocket == INVALID_SOCKET) {
-        WSACleanup();  // Очистка Winsock
-        return 1;  // Завершаем выполнение программы, если сокет не был создан
-    }
-
-    // Привязка сокета
-    if (!BindSocket(listenSocket)) {
-        closesocket(listenSocket);  // Закрытие сокета, если привязка не удалась
-        WSACleanup();  // Очистка Winsock
-        return 1;  // Завершаем выполнение программы
-    }
-
-    // Начало прослушивания на сокете
-    if (!StartListening(listenSocket)) {
-        closesocket(listenSocket);  // Закрытие сокета, если не удалось начать прослушивание
-        WSACleanup();  // Очистка Winsock
-        return 1;  // Завершаем выполнение программы
-    }
-
-    std::cout << "\nСервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
-
-    // --- Создаем ОДИН экземпляр Taskm для всего сервера ---
-    Taskm taskManager;
-    std::cout << "Экземпляр Task Manager создан." << std::endl;
-
-    // --- ЗАПУСК ФОНОВОГО ПОТОКА ---
-    //std::thread jsonUpdateThread(periodicJsonUpdate); // Создаем поток, передаем ему нашу функцию
-    //jsonUpdateThread.detach(); // Отсоединяем поток, чтобы он работал независимо в фоне
-    //// и не блокировал завершение main (хотя наш main и так в вечном цикле)
-    //std::cout << "Запущен фоновый поток для обновления JSON каждые 5 секунд." << std::endl;
-
-    // Главный цикл для принятия и обработки клиентских соединений
-    while (true) {
-        sockaddr_in clientAddr = {};
-        int clientAddrLen = sizeof(clientAddr);
-        SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
-
-        if (clientSocket == INVALID_SOCKET) {
-            std::cerr << "Ошибка accept: " << WSAGetLastError() << std::endl;
-            // Можно добавить небольшую паузу, чтобы не загружать CPU в случае постоянных ошибок accept
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            continue;
-        }
-
-        // --- Запуск обработки клиента в отдельном потоке ---
-        std::cout << "Клиент подключился (" << clientSocket << "). Запуск потока обработки..." << std::endl;
-        // Передаем сокет по значению (копируется), а taskManager по ссылке
-        std::thread clientThread(HandleClient, clientSocket, std::ref(taskManager));
-        clientThread.detach(); // Отсоединяем поток, чтобы он работал независимо
-    }
-
-    // Закрытие сокета для прослушивания и очистка Winsock
-    closesocket(listenSocket);
-    WSACleanup();
-
-    return 0;
-}
-
-//int main()
-//{
-//    Taskm taskm;
-//    taskm.update();
-//    taskm.save_json();
+//int main() {
+//    SetConsoleOutputCP(CP_UTF8);
+//    setlocale(LC_ALL, ".UTF8");
+//
+//    RunAllTests();
+//
+//    // Инициализация Winsock
+//    if (!InitWinsock()) {
+//        std::cerr << "Ошибка WSAStartup!" << std::endl;  // Если не удалось инициализировать Winsock
+//        return 1;  // Завершаем выполнение программы
+//    }
+//
+//    // Создание сокета для прослушивания
+//    SOCKET listenSocket = CreateListenSocket();
+//    if (listenSocket == INVALID_SOCKET) {
+//        WSACleanup();  // Очистка Winsock
+//        return 1;  // Завершаем выполнение программы, если сокет не был создан
+//    }
+//
+//    // Привязка сокета
+//    if (!BindSocket(listenSocket)) {
+//        closesocket(listenSocket);  // Закрытие сокета, если привязка не удалась
+//        WSACleanup();  // Очистка Winsock
+//        return 1;  // Завершаем выполнение программы
+//    }
+//
+//    // Начало прослушивания на сокете
+//    if (!StartListening(listenSocket)) {
+//        closesocket(listenSocket);  // Закрытие сокета, если не удалось начать прослушивание
+//        WSACleanup();  // Очистка Winsock
+//        return 1;  // Завершаем выполнение программы
+//    }
+//
+//    std::cout << "\nСервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
+//
+//    // --- Создаем ОДИН экземпляр Taskm для всего сервера ---
+//    Taskm taskManager;
+//    std::cout << "Экземпляр Task Manager создан." << std::endl;
+//
+//    // --- ЗАПУСК ФОНОВОГО ПОТОКА ---
+//    //std::thread jsonUpdateThread(periodicJsonUpdate); // Создаем поток, передаем ему нашу функцию
+//    //jsonUpdateThread.detach(); // Отсоединяем поток, чтобы он работал независимо в фоне
+//    //// и не блокировал завершение main (хотя наш main и так в вечном цикле)
+//    //std::cout << "Запущен фоновый поток для обновления JSON каждые 5 секунд." << std::endl;
+//
+//    // Главный цикл для принятия и обработки клиентских соединений
+//    while (true) {
+//        sockaddr_in clientAddr = {};
+//        int clientAddrLen = sizeof(clientAddr);
+//        SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
+//
+//        if (clientSocket == INVALID_SOCKET) {
+//            std::cerr << "Ошибка accept: " << WSAGetLastError() << std::endl;
+//            // Можно добавить небольшую паузу, чтобы не загружать CPU в случае постоянных ошибок accept
+//            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//            continue;
+//        }
+//
+//        // --- Запуск обработки клиента в отдельном потоке ---
+//        std::cout << "Клиент подключился (" << clientSocket << "). Запуск потока обработки..." << std::endl;
+//        // Передаем сокет по значению (копируется), а taskManager по ссылке
+//        std::thread clientThread(HandleClient, clientSocket, std::ref(taskManager));
+//        clientThread.detach(); // Отсоединяем поток, чтобы он работал независимо
+//    }
+//
+//    // Закрытие сокета для прослушивания и очистка Winsock
+//    closesocket(listenSocket);
+//    WSACleanup();
+//
+//    return 0;
 //}
+
+int main()
+{
+    Taskm taskm;
+    taskm.update();
+    taskm.save_json_totals();
+}

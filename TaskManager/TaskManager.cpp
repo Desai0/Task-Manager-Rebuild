@@ -16,9 +16,11 @@
 #include "json.hpp"
 
 #pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "pdh.lib")
+#define BYTES_IN_MB (1024.0 * 1024.0)
 
 #define SERVER_PORT 12345
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 8192
 
 using json = nlohmann::json;
 
@@ -137,8 +139,16 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) {
                             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_after - time_before);
                             std::cout << "    -> TerminateProcessByPid завершился за " << duration.count() << " мс. Результат: " << (success ? "успех" : "неудача") << std::endl;
 
-                            if (TerminateProcessByPid(pidToTerminate)) { /*...*/ responseJson["status"] = "success"; responseJson["message"] = "..."; responseJson["pid"] = pidToTerminate; }
-                            else { /*...*/ responseJson["status"] = "error"; responseJson["message"] = "..."; responseJson["pid"] = pidToTerminate; }
+                            if (success) { // Используем результат
+                                responseJson["status"] = "success";
+                                responseJson["message"] = "Запрос на завершение процесса отправлен."; // Пример сообщения
+                                responseJson["pid"] = pidToTerminate;
+                            }
+                            else {
+                                responseJson["status"] = "error";
+                                responseJson["message"] = "Не удалось завершить процесс."; // Пример сообщения
+                                responseJson["pid"] = pidToTerminate;
+                            }
                         }
                         else { /*...*/ responseJson["status"] = "error"; responseJson["message"] = "..."; }
                         responseString = responseJson.dump() + "\n";
@@ -149,9 +159,39 @@ void HandleClient(SOCKET clientSocket, Taskm& taskManager) {
                         responseString = responseJson.dump() + "\n";
 
                     }
+      //              else if (command == "debug_process_memory") {
+						//if (requestJson.contains("pid") && requestJson["pid"].is_number_integer()) {
+						//	DWORD pidToDebug = requestJson["pid"];
+						//	std::string processName = requestJson.contains("name") ? requestJson["name"] : ""; // Имя процесса, если нужно
+						//	taskManager.debug_process_memory(pidToDebug, processName); // Вызываем метод отладки
+						//	responseJson["status"] = "success";
+						//	responseJson["message"] = "Отладка памяти завершена."; // Пример сообщения
+						//}
+						//else { /*...*/ responseJson["status"] = "error"; responseJson["message"] = "..."; }
+						//responseString = responseJson.dump() + "\n";
+      //              }
                     else if (command == "getSystemLoad") {
-                        responseJson["status"] = "success"; // Заглушка
-                        responseJson["systemLoad"] = { {"cpu", 0.0}, {"memory", 0.0} };
+                        std::cout << "[" << std::this_thread::get_id() << "] Команда: getSystemLoad" << std::endl;
+
+                        // Получаем % загрузки CPU
+                        double cpuLoad = taskManager.CPU_total_get(); // Используем существующий метод
+
+                        // Получаем % загрузки Памяти (если функция еще не была добавлена, добавьте ее)
+                        MEMORYSTATUSEX statex;
+                        statex.dwLength = sizeof(statex);
+                        double memoryLoad = taskManager.get_system_memory_load_percent();
+                        if (GlobalMemoryStatusEx(&statex)) {
+                            memoryLoad = static_cast<double>(statex.dwMemoryLoad);
+                        }
+                        else {
+                            std::cerr << "[" << std::this_thread::get_id() << "] Ошибка GlobalMemoryStatusEx: " << GetLastError() << std::endl;
+                        }
+
+                        responseJson["status"] = "success";
+                        responseJson["systemLoad"] = {
+                            {"cpu", cpuLoad},       // Добавляем CPU
+                            {"memoryPercent", memoryLoad} // Память (имя поля можно изменить, если хотите)
+                        };
                         responseString = responseJson.dump() + "\n";
                     }
                     else {
@@ -480,81 +520,82 @@ void RunAllTests() {
 }
 
 //// Главная функция сервера
-//int main() {
-//    SetConsoleOutputCP(CP_UTF8);
-//    setlocale(LC_ALL, ".UTF8");
-//
-//    RunAllTests();
-//
-//    // Инициализация Winsock
-//    if (!InitWinsock()) {
-//        std::cerr << "Ошибка WSAStartup!" << std::endl;  // Если не удалось инициализировать Winsock
-//        return 1;  // Завершаем выполнение программы
-//    }
-//
-//    // Создание сокета для прослушивания
-//    SOCKET listenSocket = CreateListenSocket();
-//    if (listenSocket == INVALID_SOCKET) {
-//        WSACleanup();  // Очистка Winsock
-//        return 1;  // Завершаем выполнение программы, если сокет не был создан
-//    }
-//
-//    // Привязка сокета
-//    if (!BindSocket(listenSocket)) {
-//        closesocket(listenSocket);  // Закрытие сокета, если привязка не удалась
-//        WSACleanup();  // Очистка Winsock
-//        return 1;  // Завершаем выполнение программы
-//    }
-//
-//    // Начало прослушивания на сокете
-//    if (!StartListening(listenSocket)) {
-//        closesocket(listenSocket);  // Закрытие сокета, если не удалось начать прослушивание
-//        WSACleanup();  // Очистка Winsock
-//        return 1;  // Завершаем выполнение программы
-//    }
-//
-//    std::cout << "\nСервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
-//
-//    // --- Создаем ОДИН экземпляр Taskm для всего сервера ---
-//    Taskm taskManager;
-//    std::cout << "Экземпляр Task Manager создан." << std::endl;
-//
-//    // --- ЗАПУСК ФОНОВОГО ПОТОКА ---
-//    //std::thread jsonUpdateThread(periodicJsonUpdate); // Создаем поток, передаем ему нашу функцию
-//    //jsonUpdateThread.detach(); // Отсоединяем поток, чтобы он работал независимо в фоне
-//    //// и не блокировал завершение main (хотя наш main и так в вечном цикле)
-//    //std::cout << "Запущен фоновый поток для обновления JSON каждые 5 секунд." << std::endl;
-//
-//    // Главный цикл для принятия и обработки клиентских соединений
-//    while (true) {
-//        sockaddr_in clientAddr = {};
-//        int clientAddrLen = sizeof(clientAddr);
-//        SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
-//
-//        if (clientSocket == INVALID_SOCKET) {
-//            std::cerr << "Ошибка accept: " << WSAGetLastError() << std::endl;
-//            // Можно добавить небольшую паузу, чтобы не загружать CPU в случае постоянных ошибок accept
-//            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-//            continue;
-//        }
-//
-//        // --- Запуск обработки клиента в отдельном потоке ---
-//        std::cout << "Клиент подключился (" << clientSocket << "). Запуск потока обработки..." << std::endl;
-//        // Передаем сокет по значению (копируется), а taskManager по ссылке
-//        std::thread clientThread(HandleClient, clientSocket, std::ref(taskManager));
-//        clientThread.detach(); // Отсоединяем поток, чтобы он работал независимо
-//    }
-//
-//    // Закрытие сокета для прослушивания и очистка Winsock
-//    closesocket(listenSocket);
-//    WSACleanup();
-//
-//    return 0;
-//}
+int main() {
+    SetConsoleOutputCP(CP_UTF8);
+    setlocale(LC_ALL, ".UTF8");
 
-int main()
-{
-    Taskm taskm;
-    taskm.update();
-    taskm.save_json_totals();
+    RunAllTests();
+
+    // Инициализация Winsock
+    if (!InitWinsock()) {
+        std::cerr << "Ошибка WSAStartup!" << std::endl;  // Если не удалось инициализировать Winsock
+        return 1;  // Завершаем выполнение программы
+    }
+
+    // Создание сокета для прослушивания
+    SOCKET listenSocket = CreateListenSocket();
+    if (listenSocket == INVALID_SOCKET) {
+        WSACleanup();  // Очистка Winsock
+        return 1;  // Завершаем выполнение программы, если сокет не был создан
+    }
+
+    // Привязка сокета
+    if (!BindSocket(listenSocket)) {
+        closesocket(listenSocket);  // Закрытие сокета, если привязка не удалась
+        WSACleanup();  // Очистка Winsock
+        return 1;  // Завершаем выполнение программы
+    }
+
+    // Начало прослушивания на сокете
+    if (!StartListening(listenSocket)) {
+        closesocket(listenSocket);  // Закрытие сокета, если не удалось начать прослушивание
+        WSACleanup();  // Очистка Winsock
+        return 1;  // Завершаем выполнение программы
+    }
+
+    std::cout << "\nСервер запущен и прослушивает порт " << SERVER_PORT << "..." << std::endl;
+
+    // --- Создаем ОДИН экземпляр Taskm для всего сервера ---
+    Taskm taskManager;
+    std::cout << "Экземпляр Task Manager создан." << std::endl;
+
+    // --- ЗАПУСК ФОНОВОГО ПОТОКА ---
+    //std::thread jsonUpdateThread(periodicJsonUpdate); // Создаем поток, передаем ему нашу функцию
+    //jsonUpdateThread.detach(); // Отсоединяем поток, чтобы он работал независимо в фоне
+    //// и не блокировал завершение main (хотя наш main и так в вечном цикле)
+    //std::cout << "Запущен фоновый поток для обновления JSON каждые 5 секунд." << std::endl;
+
+    // Главный цикл для принятия и обработки клиентских соединений
+    while (true) {
+        sockaddr_in clientAddr = {};
+        int clientAddrLen = sizeof(clientAddr);
+        SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
+
+        if (clientSocket == INVALID_SOCKET) {
+            std::cerr << "Ошибка accept: " << WSAGetLastError() << std::endl;
+            // Можно добавить небольшую паузу, чтобы не загружать CPU в случае постоянных ошибок accept
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
+
+        // --- Запуск обработки клиента в отдельном потоке ---
+        std::cout << "Клиент подключился (" << clientSocket << "). Запуск потока обработки..." << std::endl;
+        // Передаем сокет по значению (копируется), а taskManager по ссылке
+        std::thread clientThread(HandleClient, clientSocket, std::ref(taskManager));
+        clientThread.detach(); // Отсоединяем поток, чтобы он работал независимо
+    }
+
+    // Закрытие сокета для прослушивания и очистка Winsock
+    closesocket(listenSocket);
+    WSACleanup();
+
+    return 0;
 }
+
+//int main()
+//{
+//    Taskm taskm;
+//    taskm.update();
+//    save_json();
+//    taskm.save_json_totals();
+//}

@@ -2,1963 +2,1578 @@
     "processes": [
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 0.0,
             "name": "[System Process]",
             "pid": 0,
             "pidParent": 0
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 0.0,
             "name": "System",
             "pid": 4,
             "pidParent": 0
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 0.0,
             "name": "Registry",
-            "pid": 148,
+            "pid": 292,
             "pidParent": 4
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 0.0,
             "name": "smss.exe",
-            "pid": 536,
+            "pid": 860,
             "pidParent": 4
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 9.953125,
+            "name": "svchost.exe",
+            "pid": 1000,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 0.0,
             "name": "csrss.exe",
-            "pid": 740,
-            "pidParent": 640
+            "pid": 1008,
+            "pidParent": 1000
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 0.0,
             "name": "wininit.exe",
-            "pid": 848,
-            "pidParent": 640
+            "pid": 1032,
+            "pidParent": 1000
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "services.exe",
-            "pid": 944,
-            "pidParent": 848
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "lsass.exe",
-            "pid": 964,
-            "pidParent": 848
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 772,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "fontdrvhost.exe",
-            "pid": 812,
-            "pidParent": 848
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
+            "memory": 0.0,
+            "name": "csrss.exe",
             "pid": 1040,
-            "pidParent": 944
+            "pidParent": 256
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 8.45703125,
             "name": "svchost.exe",
-            "pid": 1084,
-            "pidParent": 944
+            "pid": 1096,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 0.0,
+            "name": "services.exe",
+            "pid": 1100,
+            "pidParent": 1032
+        },
+        {
+            "cpu": 0.0,
+            "memory": 25.0625,
+            "name": "lsass.exe",
+            "pid": 1124,
+            "pidParent": 1032
+        },
+        {
+            "cpu": 0.0,
+            "memory": 10.875,
+            "name": "winlogon.exe",
+            "pid": 1196,
+            "pidParent": 256
+        },
+        {
+            "cpu": 0.0,
+            "memory": 27.390625,
             "name": "svchost.exe",
-            "pid": 1324,
-            "pidParent": 944
+            "pid": 1328,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 3.015625,
+            "name": "fontdrvhost.exe",
+            "pid": 1356,
+            "pidParent": 1032
+        },
+        {
+            "cpu": 0.0,
+            "memory": 9.484375,
+            "name": "fontdrvhost.exe",
+            "pid": 1364,
+            "pidParent": 1196
+        },
+        {
+            "cpu": 0.0,
+            "memory": 14.61328125,
             "name": "svchost.exe",
-            "pid": 1372,
-            "pidParent": 944
+            "pid": 1464,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 8.67578125,
             "name": "svchost.exe",
-            "pid": 1400,
-            "pidParent": 944
+            "pid": 1480,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "IntelCpHDCPSvc.exe",
-            "pid": 1416,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
+            "memory": 7.390625,
             "name": "svchost.exe",
-            "pid": 1432,
-            "pidParent": 944
+            "pid": 1508,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 9.73046875,
             "name": "svchost.exe",
-            "pid": 1440,
-            "pidParent": 944
+            "pid": 1588,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "IntelCpHeciSvc.exe",
-            "pid": 1660,
-            "pidParent": 944
+            "memory": 7.58203125,
+            "name": "svchost.exe",
+            "pid": 1612,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 5.18359375,
+            "name": "svchost.exe",
+            "pid": 1644,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 8.72265625,
+            "name": "svchost.exe",
+            "pid": 1704,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 16.703125,
             "name": "svchost.exe",
             "pid": 1756,
-            "pidParent": 944
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 130.29296875,
+            "name": "dwm.exe",
+            "pid": 1796,
+            "pidParent": 1196
+        },
+        {
+            "cpu": 0.0,
+            "memory": 47.796875,
             "name": "NVDisplay.Container.exe",
-            "pid": 1936,
-            "pidParent": 944
+            "pid": 1868,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 15.83203125,
+            "name": "svchost.exe",
+            "pid": 1936,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 19.21484375,
             "name": "svchost.exe",
             "pid": 1980,
-            "pidParent": 944
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 10.78515625,
             "name": "svchost.exe",
-            "pid": 2004,
-            "pidParent": 944
+            "pid": 2188,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 5.6953125,
             "name": "svchost.exe",
-            "pid": 2036,
-            "pidParent": 944
+            "pid": 2196,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 678.33984375,
+            "name": "firefox.exe",
+            "pid": 2300,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 139.22265625,
+            "name": "Code.exe",
+            "pid": 2356,
+            "pidParent": 19572
+        },
+        {
+            "cpu": 0.0,
+            "memory": 18.37109375,
             "name": "svchost.exe",
-            "pid": 2044,
-            "pidParent": 944
+            "pid": 2492,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 66.55859375,
+            "name": "NVDisplay.Container.exe",
+            "pid": 2616,
+            "pidParent": 1868
+        },
+        {
+            "cpu": 0.0,
+            "memory": 15.72265625,
             "name": "svchost.exe",
-            "pid": 1764,
-            "pidParent": 944
+            "pid": 2648,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 27.1796875,
+            "name": "ApplicationFrameHost.exe",
+            "pid": 2688,
+            "pidParent": 1328
+        },
+        {
+            "cpu": 0.0,
+            "memory": 7.24609375,
             "name": "svchost.exe",
-            "pid": 2068,
-            "pidParent": 944
+            "pid": 2716,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 14.80859375,
             "name": "svchost.exe",
-            "pid": 2076,
-            "pidParent": 944
+            "pid": 2756,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 6.21484375,
             "name": "svchost.exe",
-            "pid": 2088,
-            "pidParent": 944
+            "pid": 2808,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2096,
-            "pidParent": 944
+            "memory": 1916.7265625,
+            "name": "devenv.exe",
+            "pid": 2852,
+            "pidParent": 6312
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2204,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "Memory Compression",
-            "pid": 2260,
-            "pidParent": 4
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2316,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "igfxCUIService.exe",
-            "pid": 2340,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2444,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2452,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2488,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2672,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2700,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2836,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 2844,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
+            "memory": 7.359375,
             "name": "svchost.exe",
             "pid": 2856,
-            "pidParent": 944
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 10.15234375,
             "name": "svchost.exe",
-            "pid": 2944,
-            "pidParent": 944
+            "pid": 2864,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 32.3984375,
+            "name": "Code.exe",
+            "pid": 2968,
+            "pidParent": 5492
+        },
+        {
+            "cpu": 0.0,
+            "memory": 134.8046875,
+            "name": "firefox.exe",
+            "pid": 3096,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 7.2265625,
             "name": "svchost.exe",
-            "pid": 3048,
-            "pidParent": 944
+            "pid": 3104,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 227.92578125,
+            "name": "firefox.exe",
+            "pid": 3172,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 49.453125,
+            "name": "firefox.exe",
+            "pid": 3320,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 18.26171875,
             "name": "svchost.exe",
-            "pid": 3088,
-            "pidParent": 944
+            "pid": 3328,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 10.22265625,
             "name": "svchost.exe",
-            "pid": 3184,
-            "pidParent": 944
+            "pid": 3372,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "wlanext.exe",
-            "pid": 3260,
-            "pidParent": 3088
+            "memory": 34.4609375,
+            "name": "gamingservices.exe",
+            "pid": 3408,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "spoolsv.exe",
-            "pid": 3280,
-            "pidParent": 944
+            "memory": 7.69140625,
+            "name": "gamingservicesnet.exe",
+            "pid": 3416,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "conhost.exe",
-            "pid": 3288,
-            "pidParent": 3260
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
+            "memory": 22.6015625,
             "name": "svchost.exe",
-            "pid": 3364,
-            "pidParent": 944
+            "pid": 3420,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 15.2578125,
             "name": "svchost.exe",
-            "pid": 3452,
-            "pidParent": 944
+            "pid": 3808,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 38.67578125,
             "name": "svchost.exe",
-            "pid": 3560,
-            "pidParent": 944
+            "pid": 3816,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 17.28515625,
             "name": "svchost.exe",
+            "pid": 3824,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 87.2265625,
+            "name": "XtuService.exe",
             "pid": 3832,
-            "pidParent": 944
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 6.90625,
+            "name": "wallpaperservice32.exe",
+            "pid": 3840,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 5.859375,
             "name": "svchost.exe",
-            "pid": 3856,
-            "pidParent": 944
+            "pid": 3848,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 6.140625,
+            "name": "jhi_service.exe",
+            "pid": 3856,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 8.0625,
             "name": "svchost.exe",
             "pid": 3864,
-            "pidParent": 944
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 3872,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
+            "memory": 14.96484375,
+            "name": "WMIRegistrationService.exe",
             "pid": 3888,
-            "pidParent": 944
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "OneApp.IGCC.WinService.exe",
-            "pid": 3904,
-            "pidParent": 944
+            "memory": 15.6484375,
+            "name": "hamachi-2.exe",
+            "pid": 3896,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "jhi_service.exe",
-            "pid": 3916,
-            "pidParent": 944
+            "memory": 52.671875,
+            "name": "OfficeClickToRun.exe",
+            "pid": 3964,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "LightKeeperService.exe",
-            "pid": 3972,
-            "pidParent": 944
+            "memory": 18.04296875,
+            "name": "firefox.exe",
+            "pid": 4016,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "MSIService.exe",
-            "pid": 3988,
-            "pidParent": 944
+            "memory": 6.10546875,
+            "name": "wlanext.exe",
+            "pid": 4136,
+            "pidParent": 3328
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "MSIAPService.exe",
-            "pid": 4052,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "Mystic_Light_Service.exe",
-            "pid": 4164,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "MSI_Central_Service.exe",
-            "pid": 4172,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 4184,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "Sendevsvc.exe",
-            "pid": 4192,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "NahimicService.exe",
-            "pid": 4212,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "nvcontainer.exe",
-            "pid": 4220,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "RstMwService.exe",
-            "pid": 4248,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 4256,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 4264,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 4276,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "RtkAudUService64.exe",
-            "pid": 4284,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "MSI_Companion_Service.exe",
-            "pid": 4292,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "LMS.exe",
-            "pid": 4328,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 4476,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 4528,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "dasHost.exe",
-            "pid": 4572,
-            "pidParent": 3832
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 4968,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 5732,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 4116,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "dllhost.exe",
-            "pid": 6332,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "gamingservicesnet.exe",
-            "pid": 6448,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "gamingservices.exe",
-            "pid": 6456,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "SearchIndexer.exe",
-            "pid": 6464,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "WmiPrvSE.exe",
-            "pid": 6908,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "WmiPrvSE.exe",
-            "pid": 7040,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "WmiPrvSE.exe",
-            "pid": 7060,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "AggregatorHost.exe",
-            "pid": 7556,
-            "pidParent": 3872
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 7656,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 7804,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 7840,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "PresentationFontCache.exe",
-            "pid": 8388,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 8624,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 8692,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 8796,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 5444,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "MSI.CentralServer.exe",
-            "pid": 9568,
-            "pidParent": 4172
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
+            "memory": 8.8125,
             "name": "conhost.exe",
-            "pid": 9576,
-            "pidParent": 9568
+            "pid": 4232,
+            "pidParent": 4136
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 6.7265625,
+            "name": "ipf_uf.exe",
+            "pid": 4272,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 15.30078125,
+            "name": "WmiPrvSE.exe",
+            "pid": 4348,
+            "pidParent": 1328
+        },
+        {
+            "cpu": 0.0,
+            "memory": 247.47265625,
+            "name": "firefox.exe",
+            "pid": 4424,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 7.03125,
             "name": "svchost.exe",
-            "pid": 10988,
-            "pidParent": 944
+            "pid": 4432,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "SecurityHealthService.exe",
-            "pid": 13500,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
+            "memory": 12.55859375,
             "name": "svchost.exe",
-            "pid": 5608,
-            "pidParent": 944
+            "pid": 4912,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 8.68359375,
+            "name": "ipf_helper.exe",
+            "pid": 5028,
+            "pidParent": 4272
+        },
+        {
+            "cpu": 0.0,
+            "memory": 148.90234375,
+            "name": "Code.exe",
+            "pid": 5492,
+            "pidParent": 6312
+        },
+        {
+            "cpu": 0.0,
+            "memory": 278.71484375,
+            "name": "firefox.exe",
+            "pid": 5560,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 92.91796875,
+            "name": "wallpaper64.exe",
+            "pid": 5716,
+            "pidParent": 3840
+        },
+        {
+            "cpu": 0.0,
+            "memory": 32.3671875,
+            "name": "sihost.exe",
+            "pid": 5812,
+            "pidParent": 2188
+        },
+        {
+            "cpu": 0.0,
+            "memory": 34.83203125,
             "name": "svchost.exe",
-            "pid": 12844,
-            "pidParent": 944
+            "pid": 5836,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 34.51171875,
             "name": "svchost.exe",
-            "pid": 892,
-            "pidParent": 944
+            "pid": 5860,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 9696,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 14856,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 3952,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 18568,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 11644,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "AmneziaVPN-service.exe",
-            "pid": 4780,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 12632,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 10268,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "MoUsoCoreWorker.exe",
-            "pid": 13956,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "MpDefenderCoreService.exe",
-            "pid": 21072,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "MsMpEng.exe",
-            "pid": 9904,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "NisSrv.exe",
-            "pid": 2620,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 12352,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "WUDFHost.exe",
-            "pid": 8044,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 11492,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "AmneziaVPN-service.exe",
-            "pid": 6660,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 9096,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "svchost.exe",
-            "pid": 380,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "csrss.exe",
-            "pid": 14208,
-            "pidParent": 15996
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "winlogon.exe",
-            "pid": 7180,
-            "pidParent": 15996
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "fontdrvhost.exe",
-            "pid": 17156,
-            "pidParent": 7180
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "dwm.exe",
-            "pid": 24652,
-            "pidParent": 7180
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "nvcontainer.exe",
-            "pid": 1724,
-            "pidParent": 4220
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "NVDisplay.Container.exe",
-            "pid": 19372,
+            "memory": 8.48046875,
+            "name": "ProcessGovernor.exe",
+            "pid": 5960,
             "pidParent": 1936
         },
         {
             "cpu": 0.0,
-            "memory": 0,
+            "memory": 6.40625,
+            "name": "ParkControl.exe",
+            "pid": 5976,
+            "pidParent": 1936
+        },
+        {
+            "cpu": 0.0,
+            "memory": 2.16796875,
+            "name": "bitsumsessionagent.exe",
+            "pid": 6004,
+            "pidParent": 1936
+        },
+        {
+            "cpu": 0.0,
+            "memory": 11.73046875,
+            "name": "AsrPolychromeRGB.exe",
+            "pid": 6016,
+            "pidParent": 1936
+        },
+        {
+            "cpu": 0.0,
+            "memory": 18.953125,
+            "name": "ProcessLasso.exe",
+            "pid": 6044,
+            "pidParent": 1936
+        },
+        {
+            "cpu": 0.0,
+            "memory": 42.109375,
+            "name": "MicaForEveryone.exe",
+            "pid": 6052,
+            "pidParent": 1936
+        },
+        {
+            "cpu": 0.0,
+            "memory": 15.3515625,
             "name": "svchost.exe",
-            "pid": 10112,
-            "pidParent": 944
+            "pid": 6076,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 0,
-            "name": "ctfmon.exe",
-            "pid": 18636,
-            "pidParent": 8796
+            "memory": 186.09375,
+            "name": "firefox.exe",
+            "pid": 6108,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 31,
-            "name": "nvcontainer.exe",
-            "pid": 20408,
-            "pidParent": 4220
-        },
-        {
-            "cpu": 0.0,
-            "memory": 32,
+            "memory": 20.29296875,
             "name": "svchost.exe",
-            "pid": 2424,
-            "pidParent": 944
+            "pid": 6180,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 75,
-            "name": "nvcontainer.exe",
-            "pid": 21624,
-            "pidParent": 4220
-        },
-        {
-            "cpu": 0.0,
-            "memory": 31,
-            "name": "svchost.exe",
-            "pid": 24144,
-            "pidParent": 944
-        },
-        {
-            "cpu": 0.0,
-            "memory": 29,
-            "name": "sihost.exe",
-            "pid": 14088,
-            "pidParent": 2068
-        },
-        {
-            "cpu": 0.0,
-            "memory": 19,
+            "memory": 17.43359375,
             "name": "taskhostw.exe",
-            "pid": 7680,
-            "pidParent": 1980
+            "pid": 6188,
+            "pidParent": 1936
         },
         {
             "cpu": 0.0,
-            "memory": 15,
-            "name": "igfxEM.exe",
-            "pid": 12420,
-            "pidParent": 2340
+            "memory": 983.93359375,
+            "name": "firefox.exe",
+            "pid": 6208,
+            "pidParent": 6584
         },
         {
-            "cpu": 9.72500854842155e-14,
-            "memory": 197,
+            "cpu": 0.0,
+            "memory": 396.1640625,
             "name": "explorer.exe",
-            "pid": 22636,
-            "pidParent": 16604
-        },
-        {
-            "cpu": 18.37002176562378,
-            "memory": 0,
-            "name": "OmApSvcBroker.exe",
-            "pid": 15596,
-            "pidParent": 1980
-        },
-        {
-            "cpu": 18.37002176562378,
-            "memory": 0,
-            "name": "nvsphelper64.exe",
-            "pid": 12124,
-            "pidParent": 4220
+            "pid": 6312,
+            "pidParent": 6232
         },
         {
             "cpu": 0.0,
-            "memory": 135,
-            "name": "NVIDIA Overlay.exe",
-            "pid": 11760,
-            "pidParent": 20408
-        },
-        {
-            "cpu": 0.0,
-            "memory": 33,
+            "memory": 11.3125,
             "name": "svchost.exe",
-            "pid": 16544,
-            "pidParent": 944
+            "pid": 6492,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 85,
+            "memory": 339.42578125,
+            "name": "firefox.exe",
+            "pid": 6624,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 16.875,
+            "name": "GUBootService.exe",
+            "pid": 6672,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 353.09375,
+            "name": "firefox.exe",
+            "pid": 6704,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 18.296875,
+            "name": "WUDFHost.exe",
+            "pid": 6812,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 265.94140625,
+            "name": "firefox.exe",
+            "pid": 6900,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 13.01171875,
+            "name": "WUDFHost.exe",
+            "pid": 6916,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 6.90625,
+            "name": "svchost.exe",
+            "pid": 6960,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 102.3515625,
+            "name": "Microsoft.ServiceHub.Controller.exe",
+            "pid": 7020,
+            "pidParent": 2852
+        },
+        {
+            "cpu": 0.0,
+            "memory": 35.8046875,
+            "name": "svchost.exe",
+            "pid": 7080,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 10.5859375,
+            "name": "svchost.exe",
+            "pid": 7184,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 218.23828125,
+            "name": "firefox.exe",
+            "pid": 7276,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 365.390625,
+            "name": "firefox.exe",
+            "pid": 7288,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 118.0078125,
+            "name": "SearchHost.exe",
+            "pid": 7472,
+            "pidParent": 1328
+        },
+        {
+            "cpu": 0.0,
+            "memory": 140.62890625,
             "name": "StartMenuExperienceHost.exe",
-            "pid": 15028,
-            "pidParent": 772
+            "pid": 7484,
+            "pidParent": 1328
         },
         {
             "cpu": 0.0,
-            "memory": 36,
+            "memory": 30.15234375,
             "name": "RuntimeBroker.exe",
-            "pid": 24136,
-            "pidParent": 772
+            "pid": 7604,
+            "pidParent": 1328
         },
         {
             "cpu": 0.0,
-            "memory": 271,
-            "name": "SearchApp.exe",
-            "pid": 17672,
-            "pidParent": 772
+            "memory": 412.7265625,
+            "name": "firefox.exe",
+            "pid": 7616,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 39,
-            "name": "RuntimeBroker.exe",
-            "pid": 172,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 46,
-            "name": "NVIDIA Overlay.exe",
-            "pid": 19084,
-            "pidParent": 11760
-        },
-        {
-            "cpu": 0.0,
-            "memory": 21,
-            "name": "RuntimeBroker.exe",
-            "pid": 13204,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 63,
-            "name": "LockApp.exe",
-            "pid": 9892,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 21,
-            "name": "NVIDIA Overlay.exe",
-            "pid": 25316,
-            "pidParent": 11760
-        },
-        {
-            "cpu": 0.0,
-            "memory": 29,
-            "name": "NVIDIA Overlay.exe",
-            "pid": 20280,
-            "pidParent": 11760
-        },
-        {
-            "cpu": 0.0,
-            "memory": 83,
-            "name": "NVIDIA Overlay.exe",
-            "pid": 8532,
-            "pidParent": 11760
-        },
-        {
-            "cpu": 0.0,
-            "memory": 35,
-            "name": "RuntimeBroker.exe",
-            "pid": 4684,
-            "pidParent": 772
-        },
-        {
-            "cpu": 18.370021765867488,
-            "memory": 0,
+            "memory": 11.84765625,
             "name": "svchost.exe",
-            "pid": 16000,
-            "pidParent": 944
+            "pid": 7652,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 54,
-            "name": "TextInputHost.exe",
-            "pid": 7452,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 10,
-            "name": "SecurityHealthSystray.exe",
-            "pid": 3776,
-            "pidParent": 22636
-        },
-        {
-            "cpu": 0.0,
-            "memory": 15,
-            "name": "RtkAudUService64.exe",
-            "pid": 10196,
-            "pidParent": 22636
-        },
-        {
-            "cpu": 0.0,
-            "memory": 40,
-            "name": "DCv2.exe",
-            "pid": 4300,
-            "pidParent": 19076
-        },
-        {
-            "cpu": 0.0,
-            "memory": 11,
+            "memory": 54.83203125,
             "name": "RuntimeBroker.exe",
-            "pid": 17336,
-            "pidParent": 772
+            "pid": 7776,
+            "pidParent": 1328
         },
         {
             "cpu": 0.0,
-            "memory": 30,
-            "name": "ApplicationFrameHost.exe",
-            "pid": 8572,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 3,
-            "name": "SystemSettings.exe",
-            "pid": 21656,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 10,
-            "name": "UserOOBEBroker.exe",
-            "pid": 20388,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 27,
-            "name": "NhNotifSys.exe",
-            "pid": 15264,
-            "pidParent": 17484
-        },
-        {
-            "cpu": 0.0,
-            "memory": 135,
-            "name": "PhoneExperienceHost.exe",
-            "pid": 16072,
-            "pidParent": 772
-        },
-        {
-            "cpu": 0.0,
-            "memory": 0,
-            "name": "MusNotifyIcon.exe",
-            "pid": 19520,
-            "pidParent": 25248
-        },
-        {
-            "cpu": 0.0,
-            "memory": 13,
+            "memory": 3.9765625,
             "name": "svchost.exe",
-            "pid": 23408,
-            "pidParent": 944
+            "pid": 7928,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 14,
+            "memory": 14.5234375,
+            "name": "svchost.exe",
+            "pid": 8108,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 52.02734375,
+            "name": "ctfmon.exe",
+            "pid": 8612,
+            "pidParent": 2808
+        },
+        {
+            "cpu": 0.0,
+            "memory": 31.47265625,
+            "name": "PulseSync.exe",
+            "pid": 8640,
+            "pidParent": 11248
+        },
+        {
+            "cpu": 0.0,
+            "memory": 9.97265625,
+            "name": "svchost.exe",
+            "pid": 8704,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 8.921875,
+            "name": "svchost.exe",
+            "pid": 8720,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 29.77734375,
+            "name": "svchost.exe",
+            "pid": 8864,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 9.16796875,
+            "name": "svchost.exe",
+            "pid": 8932,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 18.5390625,
             "name": "dllhost.exe",
-            "pid": 5492,
-            "pidParent": 772
-        },
-        {
-            "cpu": 18.370021765874103,
-            "memory": 0,
-            "name": "Taskmgr.exe",
-            "pid": 22124,
-            "pidParent": 22636
+            "pid": 9020,
+            "pidParent": 1328
         },
         {
             "cpu": 0.0,
-            "memory": 102,
-            "name": "AmneziaVPN.exe",
-            "pid": 9456,
-            "pidParent": 22636
+            "memory": 687.12890625,
+            "name": "AyuGram.exe",
+            "pid": 9392,
+            "pidParent": 6312
         },
         {
             "cpu": 0.0,
-            "memory": 280,
-            "name": "opera.exe",
-            "pid": 24396,
-            "pidParent": 22636
+            "memory": 259.1796875,
+            "name": "v2rayN.exe",
+            "pid": 9504,
+            "pidParent": 6312
         },
         {
             "cpu": 0.0,
-            "memory": 8,
-            "name": "opera_crashreporter.exe",
-            "pid": 8856,
-            "pidParent": 24396
+            "memory": 55.56640625,
+            "name": "firefox.exe",
+            "pid": 9536,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 358,
-            "name": "opera.exe",
-            "pid": 19752,
-            "pidParent": 24396
+            "memory": 46.0859375,
+            "name": "Code.exe",
+            "pid": 9604,
+            "pidParent": 5492
         },
         {
             "cpu": 0.0,
-            "memory": 57,
-            "name": "opera.exe",
-            "pid": 17964,
-            "pidParent": 24396
+            "memory": 37.078125,
+            "name": "CarambaSwitcher.exe",
+            "pid": 9656,
+            "pidParent": 6312
         },
         {
             "cpu": 0.0,
-            "memory": 28,
-            "name": "opera.exe",
-            "pid": 10704,
-            "pidParent": 24396
+            "memory": 177.51953125,
+            "name": "firefox.exe",
+            "pid": 9704,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 54,
-            "name": "opera.exe",
-            "pid": 13292,
-            "pidParent": 24396
+            "memory": 14.79296875,
+            "name": "firefox.exe",
+            "pid": 9928,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 59,
-            "name": "opera.exe",
-            "pid": 8488,
-            "pidParent": 24396
+            "memory": 174.78125,
+            "name": "firefox.exe",
+            "pid": 10056,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 61,
-            "name": "opera.exe",
-            "pid": 24064,
-            "pidParent": 24396
+            "memory": 51.796875,
+            "name": "PulseSync.exe",
+            "pid": 10092,
+            "pidParent": 11248
         },
         {
             "cpu": 0.0,
-            "memory": 146,
-            "name": "opera.exe",
-            "pid": 21200,
-            "pidParent": 24396
+            "memory": 120.4375,
+            "name": "PulseSync.exe",
+            "pid": 10128,
+            "pidParent": 11248
         },
         {
             "cpu": 0.0,
-            "memory": 117,
-            "name": "opera.exe",
-            "pid": 19808,
-            "pidParent": 24396
+            "memory": 15.96875,
+            "name": "firefox.exe",
+            "pid": 10312,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 51,
-            "name": "opera.exe",
-            "pid": 22704,
-            "pidParent": 24396
+            "memory": 19.57421875,
+            "name": "PowerToys.exe",
+            "pid": 10348,
+            "pidParent": 1936
         },
         {
             "cpu": 0.0,
-            "memory": 24,
-            "name": "opera.exe",
-            "pid": 2404,
-            "pidParent": 24396
+            "memory": 29.3671875,
+            "name": "PowerToys.AdvancedPaste.exe",
+            "pid": 10488,
+            "pidParent": 10348
         },
         {
             "cpu": 0.0,
-            "memory": 76,
-            "name": "opera.exe",
-            "pid": 23248,
-            "pidParent": 24396
+            "memory": 1.875,
+            "name": "PowerToys.AlwaysOnTop.exe",
+            "pid": 10496,
+            "pidParent": 10348
         },
         {
             "cpu": 0.0,
-            "memory": 76,
-            "name": "opera.exe",
-            "pid": 13016,
-            "pidParent": 24396
+            "memory": 14.24609375,
+            "name": "SystemSettingsAdminFlows.exe",
+            "pid": 10544,
+            "pidParent": 5812
         },
         {
             "cpu": 0.0,
-            "memory": 80,
-            "name": "opera.exe",
-            "pid": 9540,
-            "pidParent": 24396
+            "memory": 1.2734375,
+            "name": "PowerToys.CropAndLock.exe",
+            "pid": 10560,
+            "pidParent": 10348
         },
         {
             "cpu": 0.0,
-            "memory": 80,
-            "name": "opera.exe",
-            "pid": 12952,
-            "pidParent": 24396
+            "memory": 30.68359375,
+            "name": "PowerToys.PowerOCR.exe",
+            "pid": 10908,
+            "pidParent": 10348
         },
         {
             "cpu": 0.0,
-            "memory": 9,
-            "name": "CompPkgSrv.exe",
-            "pid": 9580,
-            "pidParent": 772
+            "memory": 185.4453125,
+            "name": "firefox.exe",
+            "pid": 10964,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 216,
-            "name": "opera.exe",
-            "pid": 16888,
-            "pidParent": 24396
+            "memory": 26.1640625,
+            "name": "Intelligent standby list cleaner ISLC.exe",
+            "pid": 11240,
+            "pidParent": 1936
         },
         {
             "cpu": 0.0,
-            "memory": 229,
-            "name": "opera.exe",
-            "pid": 22192,
-            "pidParent": 24396
+            "memory": 142.5234375,
+            "name": "PulseSync.exe",
+            "pid": 11248,
+            "pidParent": 6312
         },
         {
             "cpu": 0.0,
-            "memory": 504,
-            "name": "opera.exe",
-            "pid": 15652,
-            "pidParent": 24396
+            "memory": 190.12109375,
+            "name": "PulseSync.exe",
+            "pid": 11288,
+            "pidParent": 11248
         },
         {
             "cpu": 0.0,
-            "memory": 641,
-            "name": "opera.exe",
-            "pid": 25504,
-            "pidParent": 24396
+            "memory": 144.90625,
+            "name": "Яндекс Музыка.exe",
+            "pid": 11648,
+            "pidParent": 12108
         },
         {
             "cpu": 0.0,
-            "memory": 236,
-            "name": "opera.exe",
-            "pid": 16968,
-            "pidParent": 24396
+            "memory": 53.53125,
+            "name": "Яндекс Музыка.exe",
+            "pid": 11724,
+            "pidParent": 12108
         },
         {
             "cpu": 0.0,
-            "memory": 143,
-            "name": "opera.exe",
-            "pid": 20352,
-            "pidParent": 24396
+            "memory": 8.515625,
+            "name": "RuntimeBroker.exe",
+            "pid": 11732,
+            "pidParent": 1328
         },
         {
             "cpu": 0.0,
-            "memory": 75,
-            "name": "opera.exe",
-            "pid": 21800,
-            "pidParent": 24396
+            "memory": 305.2421875,
+            "name": "Яндекс Музыка.exe",
+            "pid": 11788,
+            "pidParent": 12108
         },
         {
             "cpu": 0.0,
-            "memory": 246,
-            "name": "opera.exe",
-            "pid": 24524,
-            "pidParent": 24396
+            "memory": 118.80859375,
+            "name": "ShellExperienceHost.exe",
+            "pid": 11856,
+            "pidParent": 1328
         },
         {
             "cpu": 0.0,
-            "memory": 10,
-            "name": "rundll32.exe",
-            "pid": 9012,
-            "pidParent": 22636
+            "memory": 31.44921875,
+            "name": "RuntimeBroker.exe",
+            "pid": 11920,
+            "pidParent": 1328
         },
         {
             "cpu": 0.0,
-            "memory": 73,
-            "name": "opera.exe",
-            "pid": 25068,
-            "pidParent": 24396
+            "memory": 10.74609375,
+            "name": "conhost.exe",
+            "pid": 12092,
+            "pidParent": 22468
         },
         {
             "cpu": 0.0,
-            "memory": 111,
-            "name": "opera.exe",
-            "pid": 14972,
-            "pidParent": 24396
+            "memory": 312.15625,
+            "name": "Яндекс Музыка.exe",
+            "pid": 12108,
+            "pidParent": 6312
         },
         {
             "cpu": 0.0,
-            "memory": 53,
-            "name": "opera.exe",
-            "pid": 20748,
-            "pidParent": 24396
-        },
-        {
-            "cpu": 0.0,
-            "memory": 65,
-            "name": "opera.exe",
-            "pid": 11296,
-            "pidParent": 24396
-        },
-        {
-            "cpu": 0.0,
-            "memory": 112,
-            "name": "opera.exe",
-            "pid": 16372,
-            "pidParent": 24396
-        },
-        {
-            "cpu": 0.0,
-            "memory": 116,
-            "name": "msedge.exe",
-            "pid": 19572,
-            "pidParent": 10868
-        },
-        {
-            "cpu": 0.0,
-            "memory": 8,
-            "name": "msedge.exe",
-            "pid": 16796,
-            "pidParent": 19572
-        },
-        {
-            "cpu": 0.0,
-            "memory": 40,
-            "name": "msedge.exe",
-            "pid": 7780,
-            "pidParent": 19572
-        },
-        {
-            "cpu": 0.0,
-            "memory": 36,
-            "name": "msedge.exe",
-            "pid": 21584,
-            "pidParent": 19572
-        },
-        {
-            "cpu": 0.0,
-            "memory": 19,
-            "name": "msedge.exe",
-            "pid": 12136,
-            "pidParent": 19572
-        },
-        {
-            "cpu": 0.0,
-            "memory": 32,
-            "name": "XboxPcAppFT.exe",
-            "pid": 1716,
-            "pidParent": 772
-        },
-        {
-            "cpu": 18.370021765872934,
-            "memory": 0,
+            "memory": 14.7734375,
             "name": "svchost.exe",
-            "pid": 21252,
-            "pidParent": 944
+            "pid": 12220,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 707,
-            "name": "devenv.exe",
-            "pid": 3068,
-            "pidParent": 22636
+            "memory": 168.6953125,
+            "name": "TextInputHost.exe",
+            "pid": 12548,
+            "pidParent": 1328
         },
         {
             "cpu": 0.0,
-            "memory": 85,
-            "name": "PerfWatson2.exe",
-            "pid": 15092,
-            "pidParent": 9292
+            "memory": 276.453125,
+            "name": "firefox.exe",
+            "pid": 12676,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 85,
-            "name": "Microsoft.ServiceHub.Controller.exe",
-            "pid": 16256,
-            "pidParent": 3068
+            "memory": 78.84375,
+            "name": "Яндекс Музыка.exe",
+            "pid": 13192,
+            "pidParent": 12108
         },
         {
             "cpu": 0.0,
-            "memory": 112,
-            "name": "ServiceHub.VSDetouredHost.exe",
-            "pid": 21400,
-            "pidParent": 16256
+            "memory": 12.3671875,
+            "name": "svchost.exe",
+            "pid": 13216,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 117,
-            "name": "ServiceHub.IdentityHost.exe",
-            "pid": 1796,
-            "pidParent": 16256
+            "memory": 175.62890625,
+            "name": "firefox.exe",
+            "pid": 13404,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 141,
-            "name": "ServiceHub.ThreadedWaitDialog.exe",
-            "pid": 4884,
-            "pidParent": 16256
+            "memory": 63.8203125,
+            "name": "xray.exe",
+            "pid": 13524,
+            "pidParent": 9504
         },
         {
             "cpu": 0.0,
-            "memory": 54,
-            "name": "ServiceHub.IntellicodeModelService.exe",
+            "memory": 243.47265625,
+            "name": "firefox.exe",
+            "pid": 13708,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 113.265625,
+            "name": "Code.exe",
+            "pid": 13812,
+            "pidParent": 19572
+        },
+        {
+            "cpu": 0.0,
+            "memory": 111.28515625,
+            "name": "Code.exe",
+            "pid": 13900,
+            "pidParent": 5492
+        },
+        {
+            "cpu": 0.0,
+            "memory": 265.40625,
+            "name": "PhoneExperienceHost.exe",
             "pid": 13920,
-            "pidParent": 16256
+            "pidParent": 5812
         },
         {
             "cpu": 0.0,
-            "memory": 1,
-            "name": "vshost.exe",
-            "pid": 21344,
-            "pidParent": 3068
+            "memory": 16.41796875,
+            "name": "Widgets.exe",
+            "pid": 13972,
+            "pidParent": 1328
         },
         {
             "cpu": 0.0,
-            "memory": 88,
-            "name": "ServiceHub.IndexingService.exe",
-            "pid": 20756,
-            "pidParent": 16256
+            "memory": 107.5859375,
+            "name": "YourPhoneAppProxy.exe",
+            "pid": 14052,
+            "pidParent": 13920
         },
         {
             "cpu": 0.0,
-            "memory": 101,
-            "name": "ServiceHub.Host.AnyCPU.exe",
-            "pid": 21528,
-            "pidParent": 16256
-        },
-        {
-            "cpu": 0.0,
-            "memory": 82,
-            "name": "ServiceHub.TestWindowStoreHost.exe",
-            "pid": 24012,
-            "pidParent": 16256
-        },
-        {
-            "cpu": 0.0,
-            "memory": 136,
-            "name": "Discord.exe",
-            "pid": 22880,
-            "pidParent": 22856
-        },
-        {
-            "cpu": 0.0,
-            "memory": 34,
-            "name": "Discord.exe",
-            "pid": 9212,
-            "pidParent": 22880
-        },
-        {
-            "cpu": 0.0,
-            "memory": 246,
-            "name": "Discord.exe",
-            "pid": 20732,
-            "pidParent": 22880
-        },
-        {
-            "cpu": 0.0,
-            "memory": 55,
-            "name": "Discord.exe",
-            "pid": 2696,
-            "pidParent": 22880
-        },
-        {
-            "cpu": 0.0,
-            "memory": 421,
-            "name": "Discord.exe",
-            "pid": 2476,
-            "pidParent": 22880
-        },
-        {
-            "cpu": 0.0,
-            "memory": 82,
-            "name": "Discord.exe",
-            "pid": 8216,
-            "pidParent": 22880
-        },
-        {
-            "cpu": 0.0,
-            "memory": 189,
-            "name": "chrome.exe",
-            "pid": 25580,
-            "pidParent": 22636
-        },
-        {
-            "cpu": 0.0,
-            "memory": 9,
-            "name": "chrome.exe",
-            "pid": 14396,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 232,
-            "name": "chrome.exe",
-            "pid": 888,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 54,
-            "name": "chrome.exe",
-            "pid": 2940,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 21,
-            "name": "chrome.exe",
-            "pid": 2924,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 150,
-            "name": "chrome.exe",
-            "pid": 24968,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 413,
-            "name": "opera.exe",
-            "pid": 4416,
-            "pidParent": 24396
-        },
-        {
-            "cpu": 0.0,
-            "memory": 38,
-            "name": "opera.exe",
-            "pid": 18060,
-            "pidParent": 24396
-        },
-        {
-            "cpu": 2.0422517951685256e-12,
-            "memory": 1034,
-            "name": "devenv.exe",
-            "pid": 20528,
-            "pidParent": 22636
-        },
-        {
-            "cpu": 0.0,
-            "memory": 84,
-            "name": "PerfWatson2.exe",
-            "pid": 23492,
-            "pidParent": 15540
-        },
-        {
-            "cpu": 0.0,
-            "memory": 93,
-            "name": "Microsoft.ServiceHub.Controller.exe",
-            "pid": 6680,
-            "pidParent": 20528
-        },
-        {
-            "cpu": 0.0,
-            "memory": 108,
-            "name": "ServiceHub.VSDetouredHost.exe",
-            "pid": 6904,
-            "pidParent": 6680
-        },
-        {
-            "cpu": 0.0,
-            "memory": 119,
-            "name": "ServiceHub.IdentityHost.exe",
-            "pid": 17472,
-            "pidParent": 6680
-        },
-        {
-            "cpu": 0.0,
-            "memory": 145,
-            "name": "ServiceHub.ThreadedWaitDialog.exe",
-            "pid": 6320,
-            "pidParent": 6680
-        },
-        {
-            "cpu": 0.0,
-            "memory": 791,
-            "name": "ServiceHub.IntellicodeModelService.exe",
-            "pid": 12900,
-            "pidParent": 6680
-        },
-        {
-            "cpu": 0.0,
-            "memory": 95,
-            "name": "ServiceHub.IndexingService.exe",
-            "pid": 21688,
-            "pidParent": 6680
-        },
-        {
-            "cpu": 0.0,
-            "memory": 1,
-            "name": "vshost.exe",
-            "pid": 23764,
-            "pidParent": 20528
-        },
-        {
-            "cpu": 0.0,
-            "memory": 51,
-            "name": "vctip.exe",
-            "pid": 20492,
-            "pidParent": 14536
-        },
-        {
-            "cpu": 0.0,
-            "memory": 108,
-            "name": "ServiceHub.Host.AnyCPU.exe",
-            "pid": 2232,
-            "pidParent": 6680
-        },
-        {
-            "cpu": 0.0,
-            "memory": 84,
-            "name": "ServiceHub.TestWindowStoreHost.exe",
-            "pid": 9984,
-            "pidParent": 6680
-        },
-        {
-            "cpu": 0.0,
-            "memory": 19,
-            "name": "vcpkgsrv.exe",
-            "pid": 16624,
-            "pidParent": 23764
-        },
-        {
-            "cpu": 0.0,
-            "memory": 19,
-            "name": "vcpkgsrv.exe",
-            "pid": 21780,
-            "pidParent": 23764
-        },
-        {
-            "cpu": 0.0,
-            "memory": 52,
-            "name": "chrome.exe",
-            "pid": 10132,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 82,
-            "name": "chrome.exe",
-            "pid": 1056,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 179,
-            "name": "chrome.exe",
-            "pid": 18188,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 57,
-            "name": "chrome.exe",
-            "pid": 21872,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 55,
-            "name": "chrome.exe",
-            "pid": 25028,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 16,
-            "name": "chrome.exe",
-            "pid": 8984,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 201,
-            "name": "chrome.exe",
-            "pid": 348,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 166,
-            "name": "chrome.exe",
-            "pid": 24664,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 125,
-            "name": "chrome.exe",
-            "pid": 9552,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 167,
-            "name": "chrome.exe",
-            "pid": 7668,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 109,
-            "name": "chrome.exe",
-            "pid": 9964,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 0.0,
-            "memory": 19,
-            "name": "vcpkgsrv.exe",
-            "pid": 19068,
-            "pidParent": 23764
-        },
-        {
-            "cpu": 7.780006838736682e-13,
-            "memory": 420,
-            "name": "vcpkgsrv.exe",
-            "pid": 22976,
-            "pidParent": 23764
-        },
-        {
-            "cpu": 0.0,
-            "memory": 92,
-            "name": "vcpkgsrv.exe",
-            "pid": 16076,
-            "pidParent": 23764
-        },
-        {
-            "cpu": 0.0,
-            "memory": 62,
-            "name": "MSBuild.exe",
-            "pid": 8228,
-            "pidParent": 20528
-        },
-        {
-            "cpu": 0.0,
-            "memory": 11,
-            "name": "conhost.exe",
-            "pid": 14792,
-            "pidParent": 8228
-        },
-        {
-            "cpu": 0.0,
-            "memory": 122,
-            "name": "vcpkgsrv.exe",
-            "pid": 12536,
-            "pidParent": 21344
-        },
-        {
-            "cpu": 9.725008548420852e-14,
-            "memory": 140,
-            "name": "ServiceHub.DataWarehouseHost.exe",
-            "pid": 9816,
-            "pidParent": 6680
-        },
-        {
-            "cpu": 18.37002176584954,
-            "memory": 0,
+            "memory": 9.3828125,
             "name": "svchost.exe",
-            "pid": 7092,
-            "pidParent": 944
-        },
-        {
-            "cpu": 18.370021765858294,
-            "memory": 108,
-            "name": "msedgewebview2.exe",
-            "pid": 15984,
-            "pidParent": 20528
-        },
-        {
-            "cpu": 18.37002176587327,
-            "memory": 8,
-            "name": "msedgewebview2.exe",
-            "pid": 21372,
-            "pidParent": 15984
-        },
-        {
-            "cpu": 18.370021765870547,
-            "memory": 65,
-            "name": "msedgewebview2.exe",
-            "pid": 19476,
-            "pidParent": 15984
-        },
-        {
-            "cpu": 18.370021765872007,
-            "memory": 32,
-            "name": "msedgewebview2.exe",
-            "pid": 16380,
-            "pidParent": 15984
-        },
-        {
-            "cpu": 18.370021765873073,
-            "memory": 19,
-            "name": "msedgewebview2.exe",
-            "pid": 18260,
-            "pidParent": 15984
+            "pid": 14108,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 5,
-            "name": "VsDebugConsole.exe",
-            "pid": 19228,
-            "pidParent": 20528
+            "memory": 14.69921875,
+            "name": "svchost.exe",
+            "pid": 14116,
+            "pidParent": 1100
         },
         {
             "cpu": 0.0,
-            "memory": 17,
+            "memory": 15.24609375,
+            "name": "RuntimeBroker.exe",
+            "pid": 14352,
+            "pidParent": 1328
+        },
+        {
+            "cpu": 0.0,
+            "memory": 141.23828125,
+            "name": "CrossDeviceService.exe",
+            "pid": 14620,
+            "pidParent": 5812
+        },
+        {
+            "cpu": 0.0,
+            "memory": 18.42578125,
+            "name": "ollama app.exe",
+            "pid": 14808,
+            "pidParent": 6312
+        },
+        {
+            "cpu": 0.0,
+            "memory": 10.28515625,
+            "name": "RuntimeBroker.exe",
+            "pid": 14912,
+            "pidParent": 1328
+        },
+        {
+            "cpu": 0.0,
+            "memory": 48.91796875,
+            "name": "ollama.exe",
+            "pid": 14920,
+            "pidParent": 14808
+        },
+        {
+            "cpu": 0.0,
+            "memory": 11.0546875,
             "name": "conhost.exe",
-            "pid": 22892,
-            "pidParent": 19228
+            "pid": 14952,
+            "pidParent": 14920
         },
         {
             "cpu": 0.0,
-            "memory": 196,
-            "name": "chrome.exe",
-            "pid": 26608,
-            "pidParent": 25580
+            "memory": 762.2109375,
+            "name": "firefox.exe",
+            "pid": 15480,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 8,
-            "name": "SearchProtocolHost.exe",
-            "pid": 26588,
-            "pidParent": 6464
-        },
-        {
-            "cpu": 18.370021765873172,
-            "memory": 0,
-            "name": "SearchFilterHost.exe",
-            "pid": 19108,
-            "pidParent": 6464
+            "memory": 154.04296875,
+            "name": "firefox.exe",
+            "pid": 15864,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 28,
-            "name": "chrome.exe",
-            "pid": 23640,
-            "pidParent": 25580
-        },
-        {
-            "cpu": 18.370021765871616,
-            "memory": 67,
-            "name": "msedgewebview2.exe",
-            "pid": 16108,
-            "pidParent": 15984
-        },
-        {
-            "cpu": 18.370021765871616,
-            "memory": 0,
-            "name": "StandardCollector.Service.exe",
-            "pid": 19396,
-            "pidParent": 944
+            "memory": 20.50390625,
+            "name": "firefox.exe",
+            "pid": 16116,
+            "pidParent": 6208
         },
         {
             "cpu": 0.0,
-            "memory": 4,
+            "memory": 185.03515625,
+            "name": "vcpkgsrv.exe",
+            "pid": 16308,
+            "pidParent": 19776
+        },
+        {
+            "cpu": 0.0,
+            "memory": 305.09375,
+            "name": "firefox.exe",
+            "pid": 16432,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 17.203125,
+            "name": "audiodg.exe",
+            "pid": 16480,
+            "pidParent": 2756
+        },
+        {
+            "cpu": 0.0,
+            "memory": 8.859375,
+            "name": "dllhost.exe",
+            "pid": 16500,
+            "pidParent": 1328
+        },
+        {
+            "cpu": 0.0,
+            "memory": 127.34375,
+            "name": "PerfWatson2.exe",
+            "pid": 16540,
+            "pidParent": 8528
+        },
+        {
+            "cpu": 0.0,
+            "memory": 15.2890625,
+            "name": "svchost.exe",
+            "pid": 16576,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 100.859375,
+            "name": "Code.exe",
+            "pid": 16704,
+            "pidParent": 5492
+        },
+        {
+            "cpu": 0.0,
+            "memory": 54.09765625,
+            "name": "vctip.exe",
+            "pid": 17052,
+            "pidParent": 25476
+        },
+        {
+            "cpu": 0.0,
+            "memory": 10.28125,
+            "name": "conhost.exe",
+            "pid": 17056,
+            "pidParent": 13524
+        },
+        {
+            "cpu": 0.0,
+            "memory": 28.16015625,
+            "name": "SystemSettingsBroker.exe",
+            "pid": 17224,
+            "pidParent": 1328
+        },
+        {
+            "cpu": 0.0,
+            "memory": 473.515625,
+            "name": "firefox.exe",
+            "pid": 17396,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 9.70703125,
             "name": "TaskManager.exe",
-            "pid": 2308,
-            "pidParent": 19228
+            "pid": 17420,
+            "pidParent": 23872
         },
         {
-            "cpu": 2.9175025645262557e-13,
-            "memory": 20,
-            "name": "msvsmon.exe",
-            "pid": 10460,
-            "pidParent": 20528
+            "cpu": 0.0,
+            "memory": 16.72265625,
+            "name": "svchost.exe",
+            "pid": 17500,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 9.00390625,
+            "name": "UserOOBEBroker.exe",
+            "pid": 17656,
+            "pidParent": 1328
+        },
+        {
+            "cpu": 0.0,
+            "memory": 193.31640625,
+            "name": "vcpkgsrv.exe",
+            "pid": 17664,
+            "pidParent": 19776
+        },
+        {
+            "cpu": 0.0,
+            "memory": 316.1328125,
+            "name": "firefox.exe",
+            "pid": 17692,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 168.875,
+            "name": "Taskmgr.exe",
+            "pid": 17820,
+            "pidParent": 5596
+        },
+        {
+            "cpu": 0.0,
+            "memory": 111.72265625,
+            "name": "Яндекс Музыка.exe",
+            "pid": 17840,
+            "pidParent": 12108
+        },
+        {
+            "cpu": 0.0,
+            "memory": 109.49609375,
+            "name": "Code.exe",
+            "pid": 17984,
+            "pidParent": 5492
+        },
+        {
+            "cpu": 0.0,
+            "memory": 36.23828125,
+            "name": "firefox.exe",
+            "pid": 17996,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 280.28515625,
+            "name": "Code.exe",
+            "pid": 18084,
+            "pidParent": 19572
+        },
+        {
+            "cpu": 0.0,
+            "memory": 123.5625,
+            "name": "ServiceHub.VSDetouredHost.exe",
+            "pid": 18492,
+            "pidParent": 7020
+        },
+        {
+            "cpu": 0.0,
+            "memory": 66.38671875,
+            "name": "VcxprojReader.exe",
+            "pid": 18628,
+            "pidParent": 2852
+        },
+        {
+            "cpu": 0.0,
+            "memory": 64.3046875,
+            "name": "VcxprojReader.exe",
+            "pid": 18636,
+            "pidParent": 2852
+        },
+        {
+            "cpu": 0.0,
+            "memory": 10.2734375,
+            "name": "conhost.exe",
+            "pid": 18648,
+            "pidParent": 18636
+        },
+        {
+            "cpu": 0.0,
+            "memory": 10.2734375,
+            "name": "conhost.exe",
+            "pid": 18656,
+            "pidParent": 18628
+        },
+        {
+            "cpu": 0.0,
+            "memory": 146.98828125,
+            "name": "ServiceHub.ThreadedWaitDialog.exe",
+            "pid": 18964,
+            "pidParent": 7020
+        },
+        {
+            "cpu": 0.0,
+            "memory": 83.41796875,
+            "name": "ServiceHub.TestWindowStoreHost.exe",
+            "pid": 19316,
+            "pidParent": 7020
+        },
+        {
+            "cpu": 0.0,
+            "memory": 195.4140625,
+            "name": "ServiceHub.IdentityHost.exe",
+            "pid": 19488,
+            "pidParent": 7020
+        },
+        {
+            "cpu": 0.0,
+            "memory": 316.14453125,
+            "name": "Code.exe",
+            "pid": 19572,
+            "pidParent": 5492
+        },
+        {
+            "cpu": 0.0,
+            "memory": 1.56640625,
+            "name": "vshost.exe",
+            "pid": 19776,
+            "pidParent": 2852
+        },
+        {
+            "cpu": 0.0,
+            "memory": 97.015625,
+            "name": "ServiceHub.IndexingService.exe",
+            "pid": 19936,
+            "pidParent": 7020
+        },
+        {
+            "cpu": 0.0,
+            "memory": 371.7890625,
+            "name": "ServiceHub.IntellicodeModelService.exe",
+            "pid": 20152,
+            "pidParent": 7020
+        },
+        {
+            "cpu": 0.0,
+            "memory": 100.359375,
+            "name": "Code.exe",
+            "pid": 20296,
+            "pidParent": 19572
+        },
+        {
+            "cpu": 0.0,
+            "memory": 546.890625,
+            "name": "firefox.exe",
+            "pid": 20432,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 276.57421875,
+            "name": "ServiceHub.Host.dotnet.x64.exe",
+            "pid": 20816,
+            "pidParent": 7020
+        },
+        {
+            "cpu": 0.0,
+            "memory": 315.01171875,
+            "name": "copilot-language-server.exe",
+            "pid": 20936,
+            "pidParent": 2852
+        },
+        {
+            "cpu": 0.0,
+            "memory": 10.54296875,
+            "name": "conhost.exe",
+            "pid": 20944,
+            "pidParent": 20936
+        },
+        {
+            "cpu": 0.0,
+            "memory": 175.69921875,
+            "name": "Code.exe",
+            "pid": 21344,
+            "pidParent": 19572
+        },
+        {
+            "cpu": 0.0,
+            "memory": 209.1875,
+            "name": "explorer.exe",
+            "pid": 21396,
+            "pidParent": 1328
+        },
+        {
+            "cpu": 0.0,
+            "memory": 7.1328125,
+            "name": "cmd.exe",
+            "pid": 21568,
+            "pidParent": 6312
+        },
+        {
+            "cpu": 0.0,
+            "memory": 357.71875,
+            "name": "Code.exe",
+            "pid": 21640,
+            "pidParent": 5492
+        },
+        {
+            "cpu": 0.0,
+            "memory": 31.578125,
+            "name": "conhost.exe",
+            "pid": 22132,
+            "pidParent": 21568
+        },
+        {
+            "cpu": 0.0,
+            "memory": 19.00390625,
+            "name": "vcpkgsrv.exe",
+            "pid": 22228,
+            "pidParent": 19776
+        },
+        {
+            "cpu": 0.0,
+            "memory": 63.10546875,
+            "name": "MSBuild.exe",
+            "pid": 22468,
+            "pidParent": 2852
+        },
+        {
+            "cpu": 0.0,
+            "memory": 107.73046875,
+            "name": "Code.exe",
+            "pid": 22836,
+            "pidParent": 5492
+        },
+        {
+            "cpu": 0.0,
+            "memory": 0.0,
+            "name": "svchost.exe",
+            "pid": 22860,
+            "pidParent": 1100
+        },
+        {
+            "cpu": 0.0,
+            "memory": 105.75390625,
+            "name": "Code.exe",
+            "pid": 22880,
+            "pidParent": 18084
+        },
+        {
+            "cpu": 0.0,
+            "memory": 36.53515625,
+            "name": "firefox.exe",
+            "pid": 23144,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 44.953125,
+            "name": "firefox.exe",
+            "pid": 23540,
+            "pidParent": 6208
+        },
+        {
+            "cpu": 0.0,
+            "memory": 144.015625,
+            "name": "Code.exe",
+            "pid": 23572,
+            "pidParent": 19572
+        },
+        {
+            "cpu": 0.0,
+            "memory": 5.75390625,
+            "name": "VsDebugConsole.exe",
+            "pid": 23872,
+            "pidParent": 2852
+        },
+        {
+            "cpu": 0.0,
+            "memory": 16.625,
+            "name": "conhost.exe",
+            "pid": 24000,
+            "pidParent": 23872
+        },
+        {
+            "cpu": 0.0,
+            "memory": 18.9140625,
+            "name": "vcpkgsrv.exe",
+            "pid": 25164,
+            "pidParent": 19776
+        },
+        {
+            "cpu": 0.0,
+            "memory": 36.2421875,
+            "name": "firefox.exe",
+            "pid": 27316,
+            "pidParent": 6208
         }
     ]
 }

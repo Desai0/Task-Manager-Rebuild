@@ -1,347 +1,480 @@
 // Taskm.cpp
-#include "Taskm.h" // Обязательно включить заголовок класса
+#include "Taskm.h"
+#include <TlHelp32.h>
+#include <tchar.h>
+#include <iostream>
+#include <fstream>
+#include <Psapi.h>
+#include <vector> // Для временного хранения PID
+#include <set>    // Для удобного поиска текущих PID
+#define BYTES_IN_MB (1024.0 * 1024.0)
 
-#include <TlHelp32.h> // Включаем здесь, т.к. нужно для update
-#include <tchar.h>    // Включаем здесь (если нужно)
-#include <iostream>   // Включаем здесь, т.к. нужно для print
-#include <fstream>    // Включаем здесь, т.к. нужно для save_json
-#include <Psapi.h>    // Включаем здесь, т.к. нужно для update (GetProcessMemoryInfo)
-#include "json.hpp"
+// Конструктор: Инициализация
+Taskm::Taskm() : firstRun(true), processorCount(0) {
+    // 1. Получаем количество процессоров
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    processorCount = sysInfo.dwNumberOfProcessors;
+    if (processorCount <= 0) {
+        processorCount = 1; // Запасной вариант
+        std::cerr << "[Taskm] Warning: Could not get processor count, defaulting to 1." << std::endl;
+    }
 
+    // 2. Получаем начальное системное время
+    FILETIME ftime;
+    GetSystemTimeAsFileTime(&ftime);
+    memcpy(&lastSystemTime, &ftime, sizeof(FILETIME));
 
-// Method returning process handle, needed for cpu usage tracking, probably
-HANDLE Task::get_handle()
-{
-    HANDLE hand = OpenProcess(PROCESS_ALL_ACCESS, FALSE, this->pid);
-    return hand;
+    // 3. Инициализируем запрос для общего CPU
+    initialize_total_cpu_query();
+
+    std::cout << "[Taskm] Initialized. Processor Count: " << processorCount << std::endl;
+}
+
+// Деструктор: Очистка PDH
+Taskm::~Taskm() {
+    if (cpuQuery) {
+        PdhCloseQuery(cpuQuery);
+    }
+}
+
+// Инициализация PDH запроса для общего CPU
+void Taskm::initialize_total_cpu_query() {
+    if (cpuQuery) { // Предотвращаем повторную инициализацию
+        PdhCloseQuery(cpuQuery);
+        cpuQuery = nullptr;
+        cpuTotal = nullptr;
+    }
+    PDH_STATUS status = PdhOpenQueryW(NULL, NULL, &cpuQuery);
+    if (status != ERROR_SUCCESS) {
+        std::cerr << "[Taskm] Error: PdhOpenQueryW failed with status " << std::hex << status << std::endl;
+        return; // Выходим, если не удалось открыть запрос
+    }
+    // Используем L"\\Processor Information(_Total)\\% Processor Time" для совместимости с разными локалями
+    // Если не работает, можно попробовать L"\\Processor(_Total)\\% Processor Time"
+    status = PdhAddEnglishCounterA(cpuQuery, "\\Processor(_Total)\\% Processor Time", NULL, &cpuTotal);
+    if (status != ERROR_SUCCESS) {
+        std::cerr << "[Taskm] Error: PdhAddEnglishCounterA failed for Processor Time with status 0x" << std::hex << status << std::endl;
+        // Попробовать запасной вариант, если первый не удался
+        status = PdhAddCounterW(cpuQuery, L"\\Processor(_Total)\\% Processor Time", NULL, &cpuTotal);
+        if (status != ERROR_SUCCESS) {
+            std::cerr << "[Taskm] Error: PdhAddCounterW fallback also failed with status " << std::hex << status << std::endl;
+            PdhCloseQuery(cpuQuery); // Закрываем запрос, если счетчик добавить не удалось
+            cpuQuery = nullptr;
+            return;
+        }
+        else {
+            std::cout << "[Taskm] Warning: Using fallback counter name '\\Processor(_Total)\\% Processor Time'." << std::endl;
+        }
+    }
+    // Делаем первый сбор данных, чтобы инициализировать счетчик
+    status = PdhCollectQueryData(cpuQuery);
+    if (status != ERROR_SUCCESS) {
+        std::cerr << "[Taskm] Error: Initial PdhCollectQueryData failed with status " << std::hex << status << std::endl;
+        // Не обязательно закрывать запрос здесь, но счетчик может быть не готов
+    }
+    std::cout << "[Taskm] Total CPU query initialized." << std::endl;
 }
 
 
+// Получение начальных времен процесса
+void Taskm::initialize_cpu_times(Task& task) {
+    HANDLE procHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, task.pid);
+    if (procHandle == NULL) {
+        // Не удалось открыть - оставляем времена нулевыми
+        return;
+    }
+    FILETIME ftimeCreate, ftimeExit, fKernel, fUser;
+    if (GetProcessTimes(procHandle, &ftimeCreate, &ftimeExit, &fKernel, &fUser)) {
+        memcpy(&task.lastKernelTime, &fKernel, sizeof(FILETIME));
+        memcpy(&task.lastUserTime, &fUser, sizeof(FILETIME));
+    }
+    CloseHandle(procHandle);
+}
 
-// Реализация метода update
-TASKM_ERROR Taskm::update()
-{
-    // Очищаем старый список перед обновлением
-    taskList.clear();
-
-    Taskm::CPU_total_init();
-
-    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (snap == INVALID_HANDLE_VALUE) { // Проверяем результат CreateToolhelp32Snapshot
-        // Можно добавить логирование ошибки WSAGetLastError()
-        return TASKM_GENERIC_ERROR; // Или другой подходящий код ошибки
+// Add the missing declaration for tKernelTime at the beginning of the calculate_task_cpu method.
+void Taskm::calculate_task_cpu(Task& task, ULONGLONG systemTimeDelta) {
+    HANDLE procHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, task.pid);
+    if (procHandle == NULL) {
+        task.cpuUsage = 0.0;
+        return;
     }
 
+    FILETIME ftimeCreate, ftimeExit, fKernel, fUser;
+    if (GetProcessTimes(procHandle, &ftimeCreate, &ftimeExit, &fKernel, &fUser)) {
+        ULARGE_INTEGER currentKernelTime, currentUserTime;
+        memcpy(&currentKernelTime, &fKernel, sizeof(FILETIME));
+        memcpy(&currentUserTime, &fUser, sizeof(FILETIME));
+
+        ULONGLONG processTimeDelta = (currentKernelTime.QuadPart - task.lastKernelTime.QuadPart) +
+            (currentUserTime.QuadPart - task.lastUserTime.QuadPart);
+
+        // Проверяем, что и интервал времени, и количество процессоров валидны
+        if (systemTimeDelta > 0 && processorCount > 0) {
+            // Рассчитываем % CPU:
+            // (Время процесса / (Общее время интервала * кол-во ядер)) * 100
+            // Это эквивалентно: (Время процесса / Общее время интервала) / кол-во ядер * 100
+            task.cpuUsage = (static_cast<double>(processTimeDelta) * 100.0) /
+                (static_cast<double>(systemTimeDelta) * processorCount); // <--- ДОБАВЛЕНО ДЕЛЕНИЕ НА processorCount
+        }
+        else {
+            task.cpuUsage = 0.0;
+        }
+
+        task.lastKernelTime = currentKernelTime;
+        task.lastUserTime = currentUserTime;
+
+    }
+    else {
+        task.cpuUsage = 0.0;
+    }
+    CloseHandle(procHandle);
+
+    // Ограничиваем значение (на всякий случай)
+    if (task.cpuUsage < 0.0) {
+        task.cpuUsage = 0.0;
+    }
+    // Теперь максимальное значение должно быть близко к 100%
+    //if (task.cpuUsage > 100.0) {
+    //    // Можно оставить как есть или ограничить 100. Небольшие превышения из-за точности возможны.
+    //    // task.cpuUsage = 100.0;
+    //}
+}
+
+
+// Обновленная реализация метода update()
+TASKM_ERROR Taskm::update() {
+    // 1. Получаем текущее системное время
+    FILETIME ftimeNow;
+    ULARGE_INTEGER currentTime;
+    GetSystemTimeAsFileTime(&ftimeNow);
+    memcpy(&currentTime, &ftimeNow, sizeof(FILETIME));
+
+    
+    // 2. Рассчитываем прошедшее системное время
+    ULONGLONG systemTimeDelta = currentTime.QuadPart - lastSystemTime.QuadPart;
+
+    // Если это первый запуск или интервал слишком мал, пропускаем расчет CPU в этот раз
+    bool skipCpuCalculation = firstRun || (systemTimeDelta < 100000); // 100000 = 10ms (примерный порог)
+
+    // 3. Получаем текущий список процессов
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        return TASKM_GENERIC_ERROR;
+    }
 
     PROCESSENTRY32 entry;
     entry.dwSize = sizeof(PROCESSENTRY32);
+    std::set<DWORD> currentPids; // Храним PID текущих процессов
 
-    if (!Process32First(snap, &entry))
-    {
-        CloseHandle(snap); // Не забываем закрыть хэндл при ошибке
+    if (!Process32First(snap, &entry)) {
+        CloseHandle(snap);
         return FIRSTPROCESS_ERROR;
     }
 
-    do
-    {
-        Task task;
+    // --- Цикл обновления/добавления ---
+    do {
+        currentPids.insert(entry.th32ProcessID); // Добавляем PID в сет текущих
 
-        // Memory
-        // Запрашиваем минимально необходимые права
-        HANDLE procHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, entry.th32ProcessID);
-        if (procHandle != NULL) // Проверяем успешность OpenProcess
-        {
-            PROCESS_MEMORY_COUNTERS_EX mem = {}; // Инициализируем нулями
-            mem.cb = sizeof(mem); // Важно указать размер структуры для некоторых версий Windows
-            if (GetProcessMemoryInfo(procHandle, (PROCESS_MEMORY_COUNTERS*)&mem, sizeof(mem)))
-            {
-                SIZE_T physMem = mem.WorkingSetSize;
-                // Используем деление с плавающей точкой
-                task.memory = static_cast<long double>(physMem) / MB_SIZE;
+        // Ищем процесс в нашей карте
+        auto it = processMap.find(entry.th32ProcessID);
+
+        if (it != processMap.end()) {
+            // --- Процесс уже существует ---
+            Task& existingTask = it->second; // Получаем ссылку на существующую задачу
+
+            // Обновляем данные, которые могут измениться (память, имя - хотя имя редко)
+            existingTask.pidParent = entry.th32ParentProcessID;
+            // Имя обычно не меняется, можно не обновлять для производительности
+            // existingTask.name = Taskm::wchar_to_string(entry.szExeFile);
+
+           // Получаем память
+            HANDLE procHandleMem = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, entry.th32ProcessID);
+            if (procHandleMem != NULL) {
+                PROCESS_MEMORY_COUNTERS_EX mem = {};
+                mem.cb = sizeof(mem);
+                if (GetProcessMemoryInfo(procHandleMem, (PROCESS_MEMORY_COUNTERS*)&mem, sizeof(mem))) {
+                    existingTask.memory = static_cast<long double>(mem.PrivateUsage) / BYTES_IN_MB;
+                }
+                else {
+                    existingTask.memory = 0.0; // Ошибка получения памяти
+                }
+                CloseHandle(procHandleMem);
             }
             else {
-                // Не удалось получить информацию о памяти (например, для защищенных процессов)
-                task.memory = 0; // Или другое значение по умолчанию
+                existingTask.memory = 0.0; // Не удалось открыть для памяти
             }
-            CloseHandle(procHandle);
+
+            // Рассчитываем CPU (если не первый запуск и интервал достаточен)
+            if (!skipCpuCalculation) {
+                calculate_task_cpu(existingTask, systemTimeDelta);
+            }
+            // В первый раз CPU останется 0.0
+
         }
         else {
-            // Не удалось открыть процесс (недостаточно прав?)
-            task.memory = 0; // Или другое значение по умолчанию
+            // --- Новый процесс ---
+            Task newTask;
+            newTask.pid = entry.th32ProcessID;
+            newTask.pidParent = entry.th32ParentProcessID;
+            newTask.name = Taskm::wchar_to_string(entry.szExeFile);
+            newTask.cpuUsage = 0.0; // Начальное значение CPU
+
+            // Получаем память для нового процесса
+            HANDLE procHandleMem = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, entry.th32ProcessID);
+            if (procHandleMem != NULL) {
+                PROCESS_MEMORY_COUNTERS_EX mem = {};
+                mem.cb = sizeof(mem);
+                if (GetProcessMemoryInfo(procHandleMem, (PROCESS_MEMORY_COUNTERS*)&mem, sizeof(mem))) {
+                    newTask.memory = static_cast<long double>(mem.PrivateUsage) / BYTES_IN_MB;
+                }
+                else {
+                    newTask.memory = 0.0;
+                }
+                CloseHandle(procHandleMem);
+            }
+            else {
+                newTask.memory = 0.0;
+            }
+
+            // Получаем начальные времена CPU для нового процесса
+            initialize_cpu_times(newTask);
+
+            // Добавляем новый процесс в карту
+            processMap.insert({ newTask.pid, newTask });
         }
-
-
-        // CPU - Placeholder (не реализовано в вашем коде)
-
-
-
-        // Process Identification
-        task.name = Taskm::wchar_to_string(entry.szExeFile);
-        task.pid = entry.th32ProcessID;
-        task.pidParent = entry.th32ParentProcessID;
-
-        taskList.push_back(task);
 
     } while (Process32Next(snap, &entry));
 
-    // Actual CPU part, will redo later, maybe
-
-    if (!taskList[0].init)
-    {
-        Taskm::init_taskList();
-    }
-    Sleep(1000);
-    for (Task& task : taskList)
-    {
-        Taskm::update_cpuUsage(task);
-    }
-
     CloseHandle(snap);
+
+    // --- Цикл удаления завершенных процессов ---
+    for (auto it = processMap.begin(); it != processMap.end(); /* нет инкремента здесь */) {
+        // Если PID из нашей карты НЕ найден в сете текущих PID...
+        if (currentPids.find(it->first) == currentPids.end()) {
+            // ...значит процесс завершился, удаляем его из карты
+            it = processMap.erase(it); // erase возвращает итератор на следующий элемент
+        }
+        else {
+            // Иначе переходим к следующему элементу карты
+            ++it;
+        }
+    }
+
+    // 4. Обновляем время последнего замера системы для следующего вызова
+    lastSystemTime = currentTime;
+    firstRun = false; // Снимаем флаг первого запуска
+
     return TASKM_OK;
 }
 
-// Реализация метода print
-TASKM_ERROR Taskm::print()
-{
-    if (taskList.empty())
-    {
-        // Можно не считать ошибкой, а просто ничего не выводить
-        /*std::cout << "Список задач пуст." << std::endl;
-        return TASKM_EMPTY_ERROR;*/ // Или TASKM_OK, в зависимости от семантики
+
+// --- Остальные методы (print, save_json, get_json_object и т.д.) ---
+
+// Метод print (теперь итерирует по карте)
+TASKM_ERROR Taskm::print() {
+    if (processMap.empty()) {
+        std::cout << "Process map is empty." << std::endl;
+        return TASKM_EMPTY_ERROR; // Или TASKM_OK
     }
-    else
-    {
-        for (const auto& task : taskList) // Используем const& для эффективности
-        {
-            std::cout << "Name: " << task.name << "; PID: " << task.pid << "; Parent: " << task.pidParent << "; RAM: " << task.memory << " MB" << "; CPU: " << task.cpuUsage << std::endl;
+    else {
+        for (const auto& pair : processMap) {
+            const Task& task = pair.second;
+            std::cout << "Name: " << task.name << "; PID: " << task.pid << "; Parent: " << task.pidParent << "; RAM: " << task.memory << " MB" << "; CPU: " << task.cpuUsage << "%" << std::endl;
         }
         return TASKM_OK;
     }
 }
 
-// Реализация метода save_json
-TASKM_ERROR Taskm::save_json()
-{
-    if (taskList.empty())
-    {
-        return TASKM_EMPTY_ERROR;
+// Метод get_json_object (теперь итерирует по карте)
+nlohmann::json Taskm::get_json_object() {
+    nlohmann::json jsonResponse;
+    jsonResponse["processes"] = nlohmann::json::array();
+
+    if (processMap.empty()) {
+        return jsonResponse;
     }
 
-    nlohmann::json jsonFile;
-    jsonFile["processes"] = nlohmann::json::array(); // Инициализируем как массив
-    
-    for (const auto& task : taskList) // Используем const&
-    {
-        nlohmann::json taskObject =
-        {
+    std::cout << "--- Preparing JSON Object --- Map size: " << processMap.size() << std::endl; // Лог размера карты
+    std::set<DWORD> pidsInJson; // Сет для проверки дубликатов PID в JSON
+
+    // --- Логирование для конкретной группы (например, Яндекс Музыка) ---
+    double loggedGroupTotalMemory = 0;
+    int loggedGroupCount = 0;
+    const std::string debugGroupName = "Яндекс Музыка.exe"; // Имя процесса для детального лога
+    // --------------------------------------------------------------------
+
+    for (const auto& pair : processMap) {
+        const Task& task = pair.second;
+
+        // Проверка на дубликаты PID перед добавлением в JSON
+        if (pidsInJson.count(task.pid)) {
+            std::cerr << "!!!!!! ERROR: Duplicate PID found in processMap before JSON creation: " << task.pid << std::endl;
+            continue; // Пропускаем добавление дубликата
+        }
+        pidsInJson.insert(task.pid);
+
+        // --- Логирование для отлаживаемой группы ---
+        if (task.name == debugGroupName) {
+            std::cout << "  [JSON Prep] PID: " << task.pid
+                << ", Name: " << task.name
+                << ", Memory MB: " << task.memory // Выводим значение как есть
+                << std::endl;
+            loggedGroupTotalMemory += task.memory;
+            loggedGroupCount++;
+        }
+        // --------------------------------------------
+
+        nlohmann::json taskObject = {
             {"pid", task.pid},
             {"pidParent", task.pidParent},
             {"name", task.name},
-            {"memory", task.memory},
+            {"memory", task.memory}, // Отправляем как есть
             {"cpu", task.cpuUsage}
         };
-        jsonFile["processes"].push_back(taskObject);
+        jsonResponse["processes"].push_back(taskObject);
     }
 
-
-    std::ofstream file("output.json");
-    if (!file.is_open()) { // Проверяем, открылся ли файл
-        std::cerr << "Ошибка: Не удалось открыть output.json для записи." << std::endl;
-        return TASKM_GENERIC_ERROR; // Или специфичная ошибка файла
+    // --- Выводим итоговую сумму для отлаживаемой группы ---
+    if (loggedGroupCount > 0) {
+        std::cout << "  [JSON Prep] Total Memory for '" << debugGroupName << "' (" << loggedGroupCount << " processes) before sending: "
+            << loggedGroupTotalMemory << " MB" << std::endl;
     }
-    file << jsonFile.dump(4); // dump(4) для красивого вывода с отступами
-    file.close(); // Хотя ofstream закроется сам в деструкторе, явно закрыть не помешает
+    std::cout << "--- Finished Preparing JSON Object --- Processes in JSON: " << jsonResponse["processes"].size() << std::endl; // Лог количества в JSON
 
-    return TASKM_OK; // Возвращаем OK после успешной записи
+    return jsonResponse;
 }
 
-TASKM_ERROR Taskm::save_json_totals()
-{
-    if (taskList.empty())
-    {
-        return TASKM_EMPTY_ERROR;
+
+// Метод save_json (теперь использует get_json_object)
+TASKM_ERROR Taskm::save_json() {
+    nlohmann::json jsonFile = get_json_object(); // Получаем готовый JSON
+
+    // Проверяем, есть ли процессы после вызова get_json_object
+    if (jsonFile.is_null() || !jsonFile.contains("processes") || jsonFile["processes"].empty()) {
+        std::cerr << "Warning: Attempting to save empty process list to output.json." << std::endl;
+        // Можно вернуть TASKM_EMPTY_ERROR или просто создать пустой файл
     }
 
+    std::ofstream file("output.json");
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open output.json for writing." << std::endl;
+        return TASKM_GENERIC_ERROR;
+    }
+    file << jsonFile.dump(4); // dump(4) для красивого вывода
+    file.close();
+
+    return TASKM_OK;
+}
+
+// --- Общие методы загрузки (без изменений, но проверим CPU_total_get) ---
+
+// Получение общей загрузки CPU (%)
+double Taskm::CPU_total_get() {
+    if (!cpuQuery || !cpuTotal) {
+        std::cerr << "[Taskm] Error: Total CPU query not initialized before calling CPU_total_get()." << std::endl;
+        // Попробовать инициализировать здесь? Или просто вернуть ошибку.
+        initialize_total_cpu_query(); // Попытка инициализации
+        if (!cpuQuery || !cpuTotal) return -1.0; // Если все еще не инициализировано
+    }
+
+    PDH_FMT_COUNTERVALUE counterVal;
+    PDH_STATUS status = PdhCollectQueryData(cpuQuery); // Собрать свежие данные
+    if (status != ERROR_SUCCESS) {
+        std::cerr << "[Taskm] Error: PdhCollectQueryData failed in CPU_total_get() with status " << std::hex << status << std::endl;
+        // Данные могут быть старыми или невалидными
+        // return -1.0; // Вернуть ошибку или пытаться получить старое значение?
+    }
+
+    // Получаем отформатированное значение
+    status = PdhGetFormattedCounterValue(cpuTotal, PDH_FMT_DOUBLE, NULL, &counterVal);
+    if (status != ERROR_SUCCESS) {
+        std::cerr << "[Taskm] Error: PdhGetFormattedCounterValue failed in CPU_total_get() with status " << std::hex << status << std::endl;
+        return -1.0; // Ошибка получения значения
+    }
+
+    // PDH иногда возвращает > 100% на короткое время, можно ограничить
+    double cpuLoad = counterVal.doubleValue;
+    if (cpuLoad < 0.0) return 0.0; // Не должно быть отрицательным
+    // if (cpuLoad > 100.0) return 100.0; // Опционально ограничить 100%
+    return cpuLoad;
+}
+
+// Получение % загрузки памяти (без изменений)
+double Taskm::get_system_memory_load_percent() {
+    MEMORYSTATUSEX statex;
+    statex.dwLength = sizeof(statex);
+    if (GlobalMemoryStatusEx(&statex)) {
+        return static_cast<double>(statex.dwMemoryLoad);
+    }
+    else {
+        std::cerr << "[Taskm] Error GlobalMemoryStatusEx: " << GetLastError() << std::endl;
+        return -1.0; // Индикация ошибки
+    }
+}
+
+// Конвертация WCHAR* в std::string (без изменений)
+std::string Taskm::wchar_to_string(WCHAR* wch) {
+    if (wch == nullptr) return "";
+    std::wstring wstr(wch);
+    int bufferSize = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    if (bufferSize == 0) return "";
+    std::string narrowString(bufferSize, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &narrowString[0], bufferSize, nullptr, nullptr);
+    // Удаляем нулевой терминатор, который WideCharToMultiByte может добавить в конец строки std::string
+    if (!narrowString.empty() && narrowString.back() == '\0') {
+        narrowString.pop_back();
+    }
+    return narrowString;
+}
+
+// --- Метод get_handle() больше не нужен, если только для внешнего использования ---
+// HANDLE Task::get_handle() { ... }
+
+// --- Методы init_taskList() и update_cpuUsage(Task&) больше не нужны ---
+// void Taskm::init_taskList() { ... }
+// void Taskm::update_cpuUsage(Task & task) { ... }
+
+
+// --- Методы save_json_totals и get_json_totals (без изменений, используют новые get-методы) ---
+TASKM_ERROR Taskm::save_json_totals() {
     //Memory
     MEMORYSTATUSEX mem;
     mem.dwLength = sizeof(MEMORYSTATUSEX);
-    GlobalMemoryStatusEx(&mem);
+    GlobalMemoryStatusEx(&mem); // Можно заменить на get_system_memory_load_percent(), если нужен только %
 
     nlohmann::json jsonFile;
     jsonFile["totals"] = nlohmann::json::object();
 
-    jsonFile["totals"] =
-    {
-        {"CPU", Taskm::CPU_total_get()},
-        {"RAM", mem.ullTotalPhys / MB_SIZE / 8}
+    jsonFile["totals"] = {
+        {"CPU_Percent", CPU_total_get()}, // Используем % общей загрузки CPU
+        {"RAM_Percent", get_system_memory_load_percent()}, // Используем % общей загрузки RAM
+        // Если нужно общее кол-во RAM в MB:
+        {"RAM_Total_MB", static_cast<double>(mem.ullTotalPhys) / BYTES_IN_MB }
     };
 
     std::ofstream file("totals_output.json");
-    if (!file.is_open()) { // Проверяем, открылся ли файл
-        std::cerr << "Ошибка: Не удалось открыть output.json для записи." << std::endl;
-        return TASKM_GENERIC_ERROR; // Или специфичная ошибка файла
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open totals_output.json for writing." << std::endl;
+        return TASKM_GENERIC_ERROR;
     }
-    file << jsonFile.dump(4); // dump(4) для красивого вывода с отступами
-    file.close(); // Хотя ofstream закроется сам в деструкторе, явно закрыть не помешает
+    file << jsonFile.dump(4);
+    file.close();
 
-    return TASKM_OK; // Возвращаем OK после успешной записи
+    return TASKM_OK;
 }
 
-nlohmann::json Taskm::get_json_object()
-{
-    if (taskList.empty())
-    {
-        // Возвращаем пустой объект или null, чтобы указать на отсутствие данных
-        return nlohmann::json::object(); // Пустой JSON объект {}
-        // или return nullptr; // если вызывающий код будет проверять на null
-    }
-
-    nlohmann::json jsonFile;
-    jsonFile["processes"] = nlohmann::json::array(); // Инициализируем как массив
-
-    for (const auto& task : taskList)
-    {
-        // Округляем значения перед добавлением в JSON для красоты
-        double cpuRounded = round(task.cpuUsage * 100.0) / 100.0; // до 2 знаков
-        double memRounded = round(task.memory * 100.0) / 100.0;   // до 2 знаков
-
-        nlohmann::json taskObject =
-        {
-            {"pid", task.pid},
-            {"pidParent", task.pidParent}, // Оставляем, если нужно в GUI
-            {"name", task.name},
-            {"memory", memRounded}, // Используем округленное значение
-            {"cpu", cpuRounded}     // Используем округленное значение
-        };
-        jsonFile["processes"].push_back(taskObject);
-    }
-    // Возвращаем готовый JSON объект
-    return jsonFile;
-}
-
-nlohmann::json Taskm::get_json_totals()
-{
-    nlohmann::json jsonFile;
-    jsonFile["totals"] = nlohmann::json::object();
-
-    //Memory
+nlohmann::json Taskm::get_json_totals() {
     MEMORYSTATUSEX mem;
     mem.dwLength = sizeof(MEMORYSTATUSEX);
     GlobalMemoryStatusEx(&mem);
 
-    jsonFile["totals"] =
-    {
-        {"CPU", Taskm::CPU_total_get()},
-        {"RAM",  mem.ullTotalPhys / MB_SIZE / 8}
+    nlohmann::json jsonFile;
+    jsonFile["totals"] = {
+         {"CPU_Percent", CPU_total_get()},
+         {"RAM_Percent", get_system_memory_load_percent()},
+         {"RAM_Total_MB", static_cast<double>(mem.ullTotalPhys) / BYTES_IN_MB }
     };
 
     return jsonFile;
-}
-// Реализация метода get
-//std::vector<Task> Taskm::get()
-//{
-//    return taskList; // Возвращает копию
-//    // Если нужна только ссылка для чтения, можно сделать:
-//    // const std::vector<Task>& Taskm::get() const { return taskList; }
-//}
-
-
-// init_taskList realisation, used to set some Task fields needed for cpu tracking
-
-// Could be done on Task init, but probaly would be slower
-// However this variant probably takes more memory
-
-// Code is from StackOverflow
-// TODO: Linkie here
-
-void Taskm::init_taskList()
-{
-    SYSTEM_INFO sysInfo;
-    FILETIME ftime, fsys, fuser;
-    HANDLE procHandle;
-
-    GetSystemInfo(&sysInfo);
-    GetSystemTimeAsFileTime(&ftime);
-
-    for (Task & task : Taskm::taskList)
-    {
-        procHandle = task.get_handle();
-        GetProcessTimes(procHandle, &ftime, &ftime, &fsys, &fuser);
-
-        task.processors = sysInfo.dwNumberOfProcessors;
-
-        memcpy(&task.CPUlast, &ftime, sizeof(FILETIME));
-        memcpy(&task.CPUlastSys, &fsys, sizeof(FILETIME));
-        memcpy(&task.CPUlastUser, &fuser, sizeof(FILETIME));
-
-        CloseHandle(procHandle);
-    }
-}
-
-// Updates a single task struct with cpu usage
-// probably have to be reworked
-// has a problem with integer limits
-void Taskm::update_cpuUsage(Task & task)
-{
-    FILETIME ftime, fsys, fuser;
-    ULARGE_INTEGER now, sys, user;
-    HANDLE procHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, task.pid);
-
-    GetSystemTimeAsFileTime(&ftime);
-    memcpy(&now, &ftime, sizeof(FILETIME));
-
-    GetProcessTimes(procHandle, &ftime, &ftime, &fsys, &fuser);
-    memcpy(&sys, &fsys, sizeof(FILETIME));
-    memcpy(&user, &fuser, sizeof(FILETIME));
-
-    task.cpuUsage =
-        (
-            (static_cast<double>(sys.QuadPart) - task.CPUlastSys.QuadPart) +
-            (user.QuadPart - task.CPUlastUser.QuadPart)
-            )
-        /
-        (now.QuadPart - task.CPUlast.QuadPart)
-        /
-        task.processors;
-
-    task.CPUlast = now;
-    task.CPUlastSys = sys;
-    task.CPUlastUser = user;
-}
-
-//CPU total
-
-void Taskm::CPU_total_init() {
-    PdhOpenQueryW(NULL, NULL, &cpuQuery);
-    // You can also use L"\\Processor(*)\\% Processor Time" and get individual CPU values with PdhGetFormattedCounterArray()
-    PdhAddEnglishCounter(cpuQuery, L"\\Processor(_Total)\\% Processor Time", NULL, &cpuTotal);
-    PdhCollectQueryData(cpuQuery);
-}
-
-double Taskm::CPU_total_get()
-{
-    PDH_FMT_COUNTERVALUE counterVal;
-
-    PdhCollectQueryData(cpuQuery);
-    PdhGetFormattedCounterValue(cpuTotal, PDH_FMT_DOUBLE, NULL, &counterVal);
-    return counterVal.doubleValue;
-}
-
-// Реализация статичного метода wchar_to_string
-std::string Taskm::wchar_to_string(WCHAR* wch)
-{
-    if (wch == nullptr) return ""; // Добавим проверку на null
-    std::wstring wstr(wch);
-    // Для корректной конвертации в мультибайтовую строку, особенно с не-ASCII символами,
-    // лучше использовать функции Windows API или стандартные средства C++11/17
-    // Простой вариант (может терять символы):
-    // return std::string(wstr.begin(), wstr.end());
-
-    // Более надежный вариант с использованием Windows API:
-    int bufferSize = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    if (bufferSize == 0) return ""; // Ошибка конвертации
-    std::string narrowString(bufferSize, 0);
-    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &narrowString[0], bufferSize, nullptr, nullptr);
-    narrowString.pop_back(); // Удалить нулевой терминатор, добавленный WideCharToMultiByte
-    return narrowString;
 }
